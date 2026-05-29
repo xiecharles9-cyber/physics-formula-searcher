@@ -3,7 +3,35 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Physics Formula Searcher</title>
+<title>Physics Formula Searcher — Search 170+ Formulas by Variable & Solve</title>
+<meta name="description" content="Free physics formula searcher and calculator. Search 170+ formulas by variable or symbol, solve for any unknown, convert units, in 5 languages. Covers mechanics, electricity, thermodynamics, waves, optics, modern & nuclear physics.">
+<meta name="keywords" content="physics formulas, physics formula search, physics calculator, formula finder, kinematics, dynamics, energy, momentum, electricity, magnetism, thermodynamics, optics, waves, equations, solve for variable, unit conversion, physics equations list">
+<meta name="author" content="physicsformulas.net">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#0f1117">
+<link rel="canonical" href="https://physicsformulas.net/">
+<!-- Open Graph / social sharing -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Physics Formula Searcher">
+<meta property="og:title" content="Physics Formula Searcher — Search 170+ Formulas by Variable">
+<meta property="og:description" content="Search physics formulas by the quantity you care about, solve for any variable, and convert units. Free, fast, in 5 languages.">
+<meta property="og:url" content="https://physicsformulas.net/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Physics Formula Searcher">
+<meta name="twitter:description" content="Search 170+ physics formulas by variable or symbol, solve for any unknown, and convert units. Free.">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Physics Formula Searcher",
+  "url": "https://physicsformulas.net/",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "Any (web browser)",
+  "description": "Free tool to search 170+ physics formulas by variable or symbol, solve for any unknown, and convert units, available in English, Spanish, French, German, and Chinese.",
+  "inLanguage": ["en", "es", "fr", "de", "zh"],
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
 <style>
   :root {
     --bg: #0f1117;
@@ -1184,6 +1212,21 @@ applyLang();
 
 // Footer year
 document.getElementById('year').textContent = new Date().getFullYear();
+
+// ===== Visitor analytics (Google Analytics 4) =====
+// Create a free GA4 property at https://analytics.google.com, copy your Measurement
+// ID (looks like "G-XXXXXXXXXX"), paste it below, and re-publish. Empty = no tracking.
+const GA_ID = "";
+if(GA_ID){
+  const g = document.createElement('script');
+  g.async = true;
+  g.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA_ID;
+  document.head.appendChild(g);
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){ dataLayer.push(arguments); }
+  gtag('js', new Date());
+  gtag('config', GA_ID);
+}
 
 // ===== Google AdSense =====
 // After your AdSense account is APPROVED, fill in both IDs below and re-publish.
