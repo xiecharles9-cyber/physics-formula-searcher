@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Physics Formula Searcher</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --panel: #1a1d27;
+    --panel2: #232734;
+    --accent: #5b9dff;
+    --accent2: #7ee787;
+    --text: #e6e9ef;
+    --muted: #8b93a7;
+    --border: #2c3140;
+    --hl: #ffd86b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+  }
+  header {
+    padding: 28px 20px 12px;
+    text-align: center;
+  }
+  h1 { margin: 0 0 4px; font-size: 26px; }
+  .sub { color: var(--muted); font-size: 14px; margin-bottom: 18px; }
+  .search-wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    position: relative;
+  }
+  #search {
+    width: 100%;
+    padding: 16px 18px;
+    font-size: 18px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--text);
+    outline: none;
+    transition: border-color .15s;
+  }
+  #search:focus { border-color: var(--accent); }
+  .chips {
+    max-width: 720px;
+    margin: 14px auto 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+  }
+  .chip {
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all .12s;
+  }
+  .chip:hover { color: var(--text); border-color: var(--accent); }
+  .count {
+    max-width: 860px;
+    margin: 24px auto 8px;
+    padding: 0 20px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .grid {
+    max-width: 860px;
+    margin: 0 auto 60px;
+    padding: 0 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+  }
+  .card .cat {
+    display: inline-block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .card h3 { margin: 0 0 10px; font-size: 16px; }
+  .formula {
+    font-family: "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+    font-size: 18px;
+    background: var(--panel2);
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    overflow-x: auto;
+  }
+  .vars { display: flex; flex-wrap: wrap; gap: 6px; }
+  .var {
+    font-size: 12px;
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 3px 8px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: border-color .12s, background .12s, color .12s;
+  }
+  .var:hover { border-color: var(--accent); color: var(--text); }
+  .var b { color: var(--text); font-weight: 600; }
+  .var.match { border-color: var(--hl); background: rgba(255,216,107,.12); }
+  .var.match b, .var.match { color: var(--hl); }
+  mark { background: rgba(255,216,107,.35); color: var(--hl); padding: 0 2px; border-radius: 3px; }
+  .empty { text-align: center; color: var(--muted); padding: 50px 20px; }
+  .var .unit { color: var(--accent); font-size: 11px; margin-left: 4px; opacity: .85; }
+  .toolbar {
+    max-width: 720px; margin: 12px auto 0; display: flex; gap: 10px;
+    justify-content: center; align-items: center; flex-wrap: wrap;
+  }
+  .toolbar label { color: var(--muted); font-size: 13px; display: flex; gap: 6px; align-items: center; cursor: pointer; }
+  .toolbar select {
+    background: var(--panel); color: var(--text); border: 1px solid var(--border);
+    border-radius: 8px; padding: 6px 10px; font-size: 13px; outline: none;
+  }
+  .calc-btn {
+    margin-top: 12px; background: var(--panel2); border: 1px solid var(--border);
+    color: var(--accent2); border-radius: 8px; padding: 7px 12px; font-size: 13px;
+    cursor: pointer; transition: all .12s;
+  }
+  .calc-btn:hover { border-color: var(--accent2); }
+  .calc { margin-top: 12px; border-top: 1px solid var(--border); padding-top: 12px; display: none; }
+  .calc.open { display: block; }
+  .calc-row {
+    display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; margin-bottom: 8px;
+  }
+  .calc-row .lbl { font-size: 13px; color: var(--muted); }
+  .calc-row .lbl b { color: var(--text); }
+  .calc-row .lbl .u { color: var(--accent); font-size: 11px; }
+  .calc-row input {
+    width: 130px; padding: 6px 9px; font-size: 14px; border-radius: 7px;
+    border: 1px solid var(--border); background: var(--bg); color: var(--text); outline: none;
+    font-family: "SF Mono", Menlo, monospace;
+  }
+  .calc-row input:focus { border-color: var(--accent); }
+  .calc-row input.solved { border-color: var(--accent2); background: rgba(126,231,135,.10); color: var(--accent2); }
+  .calc-row input.const { color: var(--muted); }
+  .calc-actions { display: flex; gap: 8px; margin-top: 4px; }
+  .calc-actions button {
+    border-radius: 7px; padding: 7px 14px; font-size: 13px; cursor: pointer; border: 1px solid var(--border);
+  }
+  .calc-solve { background: var(--accent); color: #06101f; border-color: var(--accent); font-weight: 600; }
+  .calc-clear { background: transparent; color: var(--muted); }
+  .calc-hint { font-size: 12px; color: var(--muted); margin: 2px 0 10px; }
+  .calc-err { color: #ff8b8b; font-size: 12px; margin-top: 6px; }
+</style>
+</head>
+<body>
+<header>
+  <h1 id="title"></h1>
+  <div class="sub" id="sub"></div>
+  <div class="search-wrap">
+    <input id="search" type="text" autocomplete="off" autofocus>
+  </div>
+  <div class="chips" id="chips"></div>
+  <div class="toolbar">
+    <label><input type="checkbox" id="symMode"> <span id="lblSym"></span></label>
+    <label><input type="checkbox" id="calcMode"> <span id="lblCalc"></span></label>
+    <label><span id="lblCat"></span> <select id="catFilter"></select></label>
+    <label><span id="lblLang"></span>
+      <select id="langSel">
+        <option value="en">English</option>
+        <option value="es">Español</option>
+        <option value="fr">Français</option>
+        <option value="de">Deutsch</option>
+        <option value="zh">中文</option>
+      </select>
+    </label>
+  </div>
+</header>
+<div class="count" id="count"></div>
+<div class="grid" id="grid"></div>
+
+<script>
+const I18N = {"en":{"ui":{"title":"⚛︎ Physics Formula Searcher","sub":"Type a variable name (e.g. displacement, force, energy) to find every formula that uses it.","phName":"Search by variable or formula name…","phSym":"Search by symbol… e.g. λ, v, X_C, m₁","symMode":"Search by symbol (e.g. λ, v, X_C)","calcMode":"Show calculators","category":"Category","all":"All","lang":"Language","formula":"formula","formulas":"formulas","calcHint":"Fill in the values you know, leave one blank, then Solve.","solve":"Solve","clear":"Clear","calculator":"Calculator","inputOnly":"input only","errNoBlank":"Leave exactly one field blank — that is the one I will solve for.","errManyBlank":"Leave only one field blank ({n} are empty).","errNoSolve":"This formula can’t be rearranged to solve for “{s}” here. Try solving for another variable.","errCompute":"Could not compute — check your inputs.","errUndef":"Result is undefined for those inputs (e.g. divide by zero or domain error).","noResults":"No formulas found","forWord":"for","tryName":"Try a variable like velocity or energy","trySym":"Try a symbol like λ, v, or X_C"}},"es":{"ui":{"title":"⚛︎ Buscador de Fórmulas de Física","sub":"Escribe el nombre de una variable (p. ej. desplazamiento, fuerza, energía) para encontrar todas las fórmulas que la usan.","phName":"Buscar por nombre de variable o fórmula…","phSym":"Buscar por símbolo… p. ej. λ, v, X_C, m₁","symMode":"Buscar por símbolo (p. ej. λ, v, X_C)","calcMode":"Mostrar calculadoras","category":"Categoría","all":"Todas","lang":"Idioma","formula":"fórmula","formulas":"fórmulas","calcHint":"Rellena los valores que conoces, deja uno en blanco y luego Resolver.","solve":"Resolver","clear":"Borrar","calculator":"Calculadora","inputOnly":"solo entrada","errNoBlank":"Deja exactamente un campo en blanco — ese es el que voy a resolver.","errManyBlank":"Deja solo un campo en blanco ({n} están vacíos).","errNoSolve":"Esta fórmula no se puede reordenar para resolver “{s}” aquí. Intenta resolver para otra variable.","errCompute":"No se pudo calcular — comprueba tus datos.","errUndef":"El resultado es indefinido para esos datos (p. ej. división por cero o error de dominio).","noResults":"No se encontraron fórmulas","forWord":"para","tryName":"Prueba con una variable como velocidad o energía","trySym":"Prueba con un símbolo como λ, v o X_C"},"cat":{"Kinematics":"Cinemática","Dynamics":"Dinámica","Momentum":"Cantidad de movimiento","Energy":"Energía","Rotational":"Rotacional","Gravitation":"Gravitación","Waves":"Ondas","Electricity":"Electricidad","Thermodynamics":"Termodinámica","Modern":"Moderna","Optics":"Óptica","Fluids":"Fluidos","AC Circuits":"Circuitos de CA","Nuclear":"Nuclear","Astrophysics":"Astrofísica"},"var":{"Boltzmann constant":"constante de Boltzmann","Coulomb constant":"constante de Coulomb","EMF":"FEM","Hubble constant":"constante de Hubble","Lorentz factor":"factor de Lorentz","Planck constant":"constante de Planck","RMS current":"corriente eficaz","RMS speed":"rapidez cuadrática media","RMS voltage":"voltaje eficaz","Reynolds number":"número de Reynolds","Rydberg constant":"constante de Rydberg","Schwarzschild radius":"radio de Schwarzschild","Stefan-Boltzmann constant":"constante de Stefan-Boltzmann","Wien constant":"constante de Wien","acceleration":"aceleración","activity":"actividad","amplitude":"amplitud","angle":"ángulo","angle of incidence":"ángulo de incidencia","angle of refraction":"ángulo de refracción","angular acceleration":"aceleración angular","angular displacement":"desplazamiento angular","angular frequency":"frecuencia angular","angular momentum":"momento angular","angular velocity":"velocidad angular","area":"área","average power":"potencia media","average speed":"rapidez media","beat frequency":"frecuencia de batido","binding energy":"energía de enlace","brightness":"brillo","buoyant force":"fuerza de flotación","capacitance":"capacitancia","capacitive reactance":"reactancia capacitiva","center of mass":"centro de masa","change in angular momentum":"cambio en el momento angular","change in angular velocity":"cambio en la velocidad angular","change in kinetic energy":"cambio en la energía cinética","change in momentum":"cambio en la cantidad de movimiento","change in velocity":"cambio en la velocidad","charge":"carga","charge density":"densidad de carga","coefficient of friction":"coeficiente de rozamiento","coefficient of restitution":"coeficiente de restitución","coefficient of static friction":"coeficiente de rozamiento estático","cold temperature":"temperatura fría","contracted length":"longitud contraída","critical angle":"ángulo crítico","current":"corriente","decay constant":"constante de desintegración","density":"densidad","depth":"profundidad","dilated time":"tiempo dilatado","displacement":"desplazamiento","distance":"distancia","drag coefficient":"coeficiente de arrastre","drag force":"fuerza de arrastre","drift velocity":"velocidad de deriva","efficiency":"eficiencia","electric field":"campo eléctrico","electric potential":"potencial eléctrico","electron mass":"masa del electrón","emissivity":"emisividad","energy":"energía","energy change":"cambio de energía","energy level":"nivel de energía","entropy change":"cambio de entropía","equivalent capacitance":"capacitancia equivalente","equivalent resistance":"resistencia equivalente","escape velocity":"velocidad de escape","exhaust velocity":"velocidad de escape de gases","expansion coefficient":"coeficiente de dilatación","final mass":"masa final","final velocity":"velocidad final","flow rate":"caudal","focal length":"distancia focal","force":"fuerza","frequency":"frecuencia","friction force":"fuerza de rozamiento","gas constant":"constante de los gases","grating spacing":"espaciado de la red","gravitational acceleration":"aceleración gravitatoria","gravitational constant":"constante gravitatoria","gravitational field strength":"intensidad del campo gravitatorio","gravitational potential":"potencial gravitatorio","half-life":"semivida","harmonic frequency":"frecuencia armónica","harmonic number":"número armónico","heat":"calor","heat energy":"energía calorífica","height":"altura","hot temperature":"temperatura caliente","image distance":"distancia de la imagen","image height":"altura de la imagen","impedance":"impedancia","impulse":"impulso","inductance":"inductancia","inductive reactance":"reactancia inductiva","initial angular velocity":"velocidad angular inicial","initial mass":"masa inicial","initial number":"número inicial","initial position":"posición inicial","initial velocity":"velocidad inicial","input energy":"energía de entrada","intensity":"intensidad","internal energy change":"cambio de energía interna","jerk":"sobreaceleración","kinetic energy":"energía cinética","latent heat":"calor latente","length":"longitud","length change":"cambio de longitud","linear density":"densidad lineal","luminosity":"luminosidad","magnetic field":"campo magnético","magnetic flux":"flujo magnético","magnification":"aumento","mass":"masa","mass defect":"defecto de masa","mass number":"número másico","maximum height":"altura máxima","maximum velocity":"velocidad máxima","mechanical energy":"energía mecánica","moles":"moles","moment of inertia":"momento de inercia","momentum":"cantidad de movimiento","momentum uncertainty":"incertidumbre de la cantidad de movimiento","normal force":"fuerza normal","number of nuclei":"número de núcleos","number of turns":"número de vueltas","number remaining":"número restante","object distance":"distancia del objeto","object height":"altura del objeto","observed frequency":"frecuencia observada","observer velocity":"velocidad del observador","orbital radius":"radio orbital","orbital velocity":"velocidad orbital","order":"orden","original length":"longitud original","original volume":"volumen original","peak current":"corriente de pico","peak voltage":"voltaje de pico","peak wavelength":"longitud de onda de pico","period":"periodo","permeability":"permeabilidad","permittivity":"permitividad","position":"posición","position uncertainty":"incertidumbre de la posición","potential energy":"energía potencial","power":"potencia","pressure":"presión","primary turns":"vueltas del primario","primary voltage":"voltaje del primario","proper length":"longitud propia","proper time":"tiempo propio","quantum number":"número cuántico","radius":"radio","range":"alcance","recession velocity":"velocidad de recesión","reduced Planck constant":"constante de Planck reducida","reference intensity":"intensidad de referencia","refractive index":"índice de refracción","relative velocity":"velocidad relativa","resistance":"resistencia","resistivity":"resistividad","resonant frequency":"frecuencia de resonancia","scattering angle":"ángulo de dispersión","secondary turns":"vueltas del secundario","secondary voltage":"voltaje del secundario","separation":"separación","slit separation":"separación entre rendijas","sound level":"nivel de sonido","source frequency":"frecuencia de la fuente","source velocity":"velocidad de la fuente","specific heat capacity":"calor específico","speed of light":"velocidad de la luz","spring constant":"constante elástica","static friction":"rozamiento estático","tangential acceleration":"aceleración tangencial","temperature":"temperatura","temperature change":"cambio de temperatura","temperature difference":"diferencia de temperatura","tension":"tensión","terminal velocity":"velocidad terminal","thermal conductivity":"conductividad térmica","thickness":"espesor","time":"tiempo","time of flight":"tiempo de vuelo","torque":"par de fuerzas","total energy":"energía total","turns per length":"vueltas por longitud","useful energy":"energía útil","velocity":"velocidad","viscosity":"viscosidad","voltage":"voltaje","volume":"volumen","volume change":"cambio de volumen","wave number":"número de onda","wave velocity":"velocidad de la onda","wavelength":"longitud de onda","wavelength shift":"desplazamiento de la longitud de onda","weight":"peso","work":"trabajo","work function":"función de trabajo"},"fname":{"Average velocity":"Velocidad media","Average acceleration":"Aceleración media","Velocity (constant a)":"Velocidad (a constante)","Displacement (suvat)":"Desplazamiento (suvat)","Velocity² (suvat)":"Velocidad² (suvat)","Displacement (avg velocity)":"Desplazamiento (velocidad media)","Projectile range":"Alcance del proyectil","Newton's second law":"Segunda ley de Newton","Weight":"Peso","Friction force":"Fuerza de rozamiento","Hooke's law":"Ley de Hooke","Centripetal force":"Fuerza centrípeta","Centripetal acceleration":"Aceleración centrípeta","Impulse":"Impulso","Linear momentum":"Cantidad de movimiento lineal","Angular momentum":"Momento angular","Work done":"Trabajo realizado","Kinetic energy":"Energía cinética","Gravitational PE":"Energía potencial gravitatoria","Elastic PE":"Energía potencial elástica","Power":"Potencia","Power (force·velocity)":"Potencia (fuerza·velocidad)","Efficiency":"Eficiencia","Torque":"Par de fuerzas","Angular velocity":"Velocidad angular","Rotational KE":"Energía cinética rotacional","Newton's gravitation":"Gravitación de Newton","Gravitational field":"Campo gravitatorio","Wave speed":"Velocidad de la onda","Period & frequency":"Periodo y frecuencia","SHM displacement":"Desplazamiento del MAS","Pendulum period":"Periodo del péndulo","Ohm's law":"Ley de Ohm","Electrical power":"Potencia eléctrica","Electrical energy":"Energía eléctrica","Charge":"Carga","Coulomb's law":"Ley de Coulomb","Capacitance":"Capacitancia","Resistivity":"Resistividad","Magnetic force on wire":"Fuerza magnética sobre un hilo","Force on moving charge":"Fuerza sobre una carga en movimiento","Heat energy":"Energía calorífica","Latent heat":"Calor latente","Ideal gas law":"Ley de los gases ideales","Pressure":"Presión","Density":"Densidad","Mass–energy":"Masa–energía","Photon energy":"Energía del fotón","de Broglie wavelength":"Longitud de onda de de Broglie","Photoelectric effect":"Efecto fotoeléctrico","Position (general)":"Posición (general)","Average speed":"Rapidez media","Relative velocity":"Velocidad relativa","Projectile time of flight":"Tiempo de vuelo del proyectil","Projectile max height":"Altura máxima del proyectil","Free fall velocity":"Velocidad de caída libre","Free fall distance":"Distancia de caída libre","Jerk":"Sobreaceleración","Tension (Atwood)":"Tensión (Atwood)","Inclined plane (parallel)":"Plano inclinado (paralela)","Inclined plane (normal)":"Plano inclinado (normal)","Static friction (max)":"Rozamiento estático (máx)","Drag force":"Fuerza de arrastre","Terminal velocity":"Velocidad terminal","Spring force constant":"Constante elástica del resorte","Banked curve angle":"Ángulo de peralte de la curva","Conservation of momentum":"Conservación de la cantidad de movimiento","Elastic collision (1D)":"Colisión elástica (1D)","Coefficient of restitution":"Coeficiente de restitución","Center of mass":"Centro de masa","Rocket equation":"Ecuación del cohete","Angular impulse":"Impulso angular","Angular acceleration":"Aceleración angular","Rotational Newton's 2nd law":"Segunda ley de Newton rotacional","Moment of inertia (point)":"Momento de inercia (punto)","Moment of inertia (disk)":"Momento de inercia (disco)","Moment of inertia (rod, center)":"Momento de inercia (varilla, centro)","Tangential velocity":"Velocidad tangencial","Tangential acceleration":"Aceleración tangencial","Angular displacement":"Desplazamiento angular","Rolling kinetic energy":"Energía cinética de rodadura","Gravitational PE (general)":"Energía potencial gravitatoria (general)","Orbital velocity":"Velocidad orbital","Escape velocity":"Velocidad de escape","Kepler's third law":"Tercera ley de Kepler","Gravitational potential":"Potencial gravitatorio","Orbital period":"Periodo orbital","SHM velocity":"Velocidad del MAS","SHM acceleration":"Aceleración del MAS","SHM max velocity":"Velocidad máxima del MAS","Mass-spring period":"Periodo masa-resorte","Angular frequency":"Frecuencia angular","Wave equation (number)":"Ecuación de onda (número)","Doppler effect (sound)":"Efecto Doppler (sonido)","Standing wave frequency":"Frecuencia de onda estacionaria","Speed of wave on string":"Velocidad de onda en una cuerda","Intensity":"Intensidad","Sound intensity level":"Nivel de intensidad sonora","Beat frequency":"Frecuencia de batido","Snell's law":"Ley de Snell","Index of refraction":"Índice de refracción","Thin lens equation":"Ecuación de la lente delgada","Magnification":"Aumento","Critical angle":"Ángulo crítico","Mirror equation":"Ecuación del espejo","Double slit (maxima)":"Doble rendija (máximos)","Diffraction grating":"Red de difracción","Lens power":"Potencia de la lente","Pressure in fluid":"Presión en un fluido","Buoyant force":"Fuerza de flotación","Continuity equation":"Ecuación de continuidad","Bernoulli's equation":"Ecuación de Bernoulli","Flow rate":"Caudal","Viscous drag (Stokes)":"Arrastre viscoso (Stokes)","Reynolds number":"Número de Reynolds","Work–energy theorem":"Teorema del trabajo y la energía","Power (average)":"Potencia (media)","Mechanical energy":"Energía mecánica","Gravitational PE (orbital)":"Energía potencial gravitatoria (orbital)","Resistors in series":"Resistencias en serie","Resistors in parallel":"Resistencias en paralelo","Capacitors in parallel":"Condensadores en paralelo","Capacitors in series":"Condensadores en serie","Power (I²R)":"Potencia (I²R)","Power (V²/R)":"Potencia (V²/R)","Electric field (point charge)":"Campo eléctrico (carga puntual)","Electric field (force)":"Campo eléctrico (fuerza)","Electric potential energy":"Energía potencial eléctrica","Electric potential":"Potencial eléctrico","Capacitor energy":"Energía del condensador","Parallel plate capacitor":"Condensador de placas paralelas","Drift velocity":"Velocidad de deriva","Magnetic flux":"Flujo magnético","Faraday's law":"Ley de Faraday","Solenoid field":"Campo del solenoide","Field around wire":"Campo alrededor de un hilo","Transformer ratio":"Relación de transformación","RMS voltage":"Voltaje eficaz","RMS current":"Corriente eficaz","Capacitive reactance":"Reactancia capacitiva","Inductive reactance":"Reactancia inductiva","Impedance (RLC)":"Impedancia (RLC)","Resonant frequency":"Frecuencia de resonancia","Inductor energy":"Energía del inductor","First law of thermodynamics":"Primer principio de la termodinámica","Thermal expansion (linear)":"Dilatación térmica (lineal)","Thermal expansion (volume)":"Dilatación térmica (volumétrica)","Heat conduction":"Conducción de calor","Carnot efficiency":"Eficiencia de Carnot","Entropy change":"Cambio de entropía","Average KE of gas":"Energía cinética media de un gas","RMS molecular speed":"Rapidez molecular cuadrática media","Work in isobaric process":"Trabajo en un proceso isobárico","Stefan–Boltzmann law":"Ley de Stefan–Boltzmann","Wien's displacement law":"Ley de desplazamiento de Wien","Relativistic momentum":"Cantidad de movimiento relativista","Lorentz factor":"Factor de Lorentz","Time dilation":"Dilatación del tiempo","Length contraction":"Contracción de la longitud","Relativistic energy":"Energía relativista","Energy–momentum relation":"Relación energía-momento","Heisenberg uncertainty":"Incertidumbre de Heisenberg","Bohr radius / energy":"Radio / energía de Bohr","Rydberg formula":"Fórmula de Rydberg","Compton wavelength shift":"Desplazamiento de longitud de onda de Compton","Radioactive decay":"Desintegración radiactiva","Half-life":"Semivida","Activity":"Actividad","Mass defect energy":"Energía del defecto de masa","Binding energy per nucleon":"Energía de enlace por nucleón","Schwarzschild radius":"Radio de Schwarzschild","Hubble's law":"Ley de Hubble","Luminosity (inverse square)":"Luminosidad (inverso del cuadrado)","Stellar luminosity":"Luminosidad estelar"}},"fr":{"ui":{"title":"⚛︎ Chercheur de Formules de Physique","sub":"Tapez le nom d'une variable (par ex. déplacement, force, énergie) pour trouver toutes les formules qui l'utilisent.","phName":"Rechercher par nom de variable ou de formule…","phSym":"Rechercher par symbole… par ex. λ, v, X_C, m₁","symMode":"Rechercher par symbole (par ex. λ, v, X_C)","calcMode":"Afficher les calculatrices","category":"Catégorie","all":"Toutes","lang":"Langue","formula":"formule","formulas":"formules","calcHint":"Remplissez les valeurs que vous connaissez, laissez-en une vide, puis cliquez sur Résoudre.","solve":"Résoudre","clear":"Effacer","calculator":"Calculatrice","inputOnly":"saisie uniquement","errNoBlank":"Laissez exactement un champ vide — c'est celui que je résoudrai.","errManyBlank":"Ne laissez qu'un seul champ vide ({n} sont vides).","errNoSolve":"Cette formule ne peut pas être réarrangée pour résoudre « {s} » ici. Essayez de résoudre pour une autre variable.","errCompute":"Impossible de calculer — vérifiez vos données.","errUndef":"Le résultat est indéfini pour ces données (par ex. division par zéro ou erreur de domaine).","noResults":"Aucune formule trouvée","forWord":"pour","tryName":"Essayez une variable comme vitesse ou énergie","trySym":"Essayez un symbole comme λ, v ou X_C"},"cat":{"Kinematics":"Cinématique","Dynamics":"Dynamique","Momentum":"Quantité de mouvement","Energy":"Énergie","Rotational":"Rotation","Gravitation":"Gravitation","Waves":"Ondes","Electricity":"Électricité","Thermodynamics":"Thermodynamique","Modern":"Physique moderne","Optics":"Optique","Fluids":"Fluides","AC Circuits":"Circuits à courant alternatif","Nuclear":"Physique nucléaire","Astrophysics":"Astrophysique"},"var":{"Boltzmann constant":"constante de Boltzmann","Coulomb constant":"constante de Coulomb","EMF":"force électromotrice","Hubble constant":"constante de Hubble","Lorentz factor":"facteur de Lorentz","Planck constant":"constante de Planck","RMS current":"courant efficace","RMS speed":"vitesse quadratique moyenne","RMS voltage":"tension efficace","Reynolds number":"nombre de Reynolds","Rydberg constant":"constante de Rydberg","Schwarzschild radius":"rayon de Schwarzschild","Stefan-Boltzmann constant":"constante de Stefan-Boltzmann","Wien constant":"constante de Wien","acceleration":"accélération","activity":"activité","amplitude":"amplitude","angle":"angle","angle of incidence":"angle d'incidence","angle of refraction":"angle de réfraction","angular acceleration":"accélération angulaire","angular displacement":"déplacement angulaire","angular frequency":"pulsation","angular momentum":"moment cinétique","angular velocity":"vitesse angulaire","area":"aire","average power":"puissance moyenne","average speed":"vitesse moyenne","beat frequency":"fréquence de battement","binding energy":"énergie de liaison","brightness":"luminosité","buoyant force":"poussée d'Archimède","capacitance":"capacité","capacitive reactance":"réactance capacitive","center of mass":"centre de masse","change in angular momentum":"variation du moment cinétique","change in angular velocity":"variation de la vitesse angulaire","change in kinetic energy":"variation de l'énergie cinétique","change in momentum":"variation de la quantité de mouvement","change in velocity":"variation de la vitesse","charge":"charge","charge density":"densité de charge","coefficient of friction":"coefficient de frottement","coefficient of restitution":"coefficient de restitution","coefficient of static friction":"coefficient de frottement statique","cold temperature":"température froide","contracted length":"longueur contractée","critical angle":"angle critique","current":"courant","decay constant":"constante de désintégration","density":"masse volumique","depth":"profondeur","dilated time":"temps dilaté","displacement":"déplacement","distance":"distance","drag coefficient":"coefficient de traînée","drag force":"force de traînée","drift velocity":"vitesse de dérive","efficiency":"rendement","electric field":"champ électrique","electric potential":"potentiel électrique","electron mass":"masse de l'électron","emissivity":"émissivité","energy":"énergie","energy change":"variation d'énergie","energy level":"niveau d'énergie","entropy change":"variation d'entropie","equivalent capacitance":"capacité équivalente","equivalent resistance":"résistance équivalente","escape velocity":"vitesse de libération","exhaust velocity":"vitesse d'éjection","expansion coefficient":"coefficient de dilatation","final mass":"masse finale","final velocity":"vitesse finale","flow rate":"débit","focal length":"distance focale","force":"force","frequency":"fréquence","friction force":"force de frottement","gas constant":"constante des gaz parfaits","grating spacing":"pas du réseau","gravitational acceleration":"accélération gravitationnelle","gravitational constant":"constante gravitationnelle","gravitational field strength":"intensité du champ gravitationnel","gravitational potential":"potentiel gravitationnel","half-life":"demi-vie","harmonic frequency":"fréquence harmonique","harmonic number":"rang de l'harmonique","heat":"chaleur","heat energy":"énergie thermique","height":"hauteur","hot temperature":"température chaude","image distance":"distance image","image height":"hauteur de l'image","impedance":"impédance","impulse":"impulsion","inductance":"inductance","inductive reactance":"réactance inductive","initial angular velocity":"vitesse angulaire initiale","initial mass":"masse initiale","initial number":"nombre initial","initial position":"position initiale","initial velocity":"vitesse initiale","input energy":"énergie fournie","intensity":"intensité","internal energy change":"variation d'énergie interne","jerk":"à-coup","kinetic energy":"énergie cinétique","latent heat":"chaleur latente","length":"longueur","length change":"variation de longueur","linear density":"masse linéique","luminosity":"luminosité","magnetic field":"champ magnétique","magnetic flux":"flux magnétique","magnification":"grandissement","mass":"masse","mass defect":"défaut de masse","mass number":"nombre de masse","maximum height":"hauteur maximale","maximum velocity":"vitesse maximale","mechanical energy":"énergie mécanique","moles":"moles","moment of inertia":"moment d'inertie","momentum":"quantité de mouvement","momentum uncertainty":"incertitude sur la quantité de mouvement","normal force":"force normale","number of nuclei":"nombre de noyaux","number of turns":"nombre de spires","number remaining":"nombre restant","object distance":"distance objet","object height":"hauteur de l'objet","observed frequency":"fréquence observée","observer velocity":"vitesse de l'observateur","orbital radius":"rayon orbital","orbital velocity":"vitesse orbitale","order":"ordre","original length":"longueur initiale","original volume":"volume initial","peak current":"courant de crête","peak voltage":"tension de crête","peak wavelength":"longueur d'onde du maximum","period":"période","permeability":"perméabilité","permittivity":"permittivité","position":"position","position uncertainty":"incertitude sur la position","potential energy":"énergie potentielle","power":"puissance","pressure":"pression","primary turns":"spires du primaire","primary voltage":"tension du primaire","proper length":"longueur propre","proper time":"temps propre","quantum number":"nombre quantique","radius":"rayon","range":"portée","recession velocity":"vitesse de récession","reduced Planck constant":"constante de Planck réduite","reference intensity":"intensité de référence","refractive index":"indice de réfraction","relative velocity":"vitesse relative","resistance":"résistance","resistivity":"résistivité","resonant frequency":"fréquence de résonance","scattering angle":"angle de diffusion","secondary turns":"spires du secondaire","secondary voltage":"tension du secondaire","separation":"séparation","slit separation":"distance entre les fentes","sound level":"niveau sonore","source frequency":"fréquence de la source","source velocity":"vitesse de la source","specific heat capacity":"capacité thermique massique","speed of light":"vitesse de la lumière","spring constant":"constante de raideur","static friction":"frottement statique","tangential acceleration":"accélération tangentielle","temperature":"température","temperature change":"variation de température","temperature difference":"différence de température","tension":"tension","terminal velocity":"vitesse limite","thermal conductivity":"conductivité thermique","thickness":"épaisseur","time":"temps","time of flight":"temps de vol","torque":"moment de force","total energy":"énergie totale","turns per length":"nombre de spires par unité de longueur","useful energy":"énergie utile","velocity":"vitesse","viscosity":"viscosité","voltage":"tension","volume":"volume","volume change":"variation de volume","wave number":"nombre d'onde","wave velocity":"vitesse de l'onde","wavelength":"longueur d'onde","wavelength shift":"décalage de longueur d'onde","weight":"poids","work":"travail","work function":"travail d'extraction"},"fname":{"Average velocity":"Vitesse moyenne","Average acceleration":"Accélération moyenne","Velocity (constant a)":"Vitesse (a constante)","Displacement (suvat)":"Déplacement (équations du MRUA)","Velocity² (suvat)":"Vitesse² (équations du MRUA)","Displacement (avg velocity)":"Déplacement (vitesse moyenne)","Projectile range":"Portée d'un projectile","Newton's second law":"Deuxième loi de Newton","Weight":"Poids","Friction force":"Force de frottement","Hooke's law":"Loi de Hooke","Centripetal force":"Force centripète","Centripetal acceleration":"Accélération centripète","Impulse":"Impulsion","Linear momentum":"Quantité de mouvement","Angular momentum":"Moment cinétique","Work done":"Travail effectué","Kinetic energy":"Énergie cinétique","Gravitational PE":"Énergie potentielle gravitationnelle","Elastic PE":"Énergie potentielle élastique","Power":"Puissance","Power (force·velocity)":"Puissance (force·vitesse)","Efficiency":"Rendement","Torque":"Moment de force","Angular velocity":"Vitesse angulaire","Rotational KE":"Énergie cinétique de rotation","Newton's gravitation":"Loi de la gravitation de Newton","Gravitational field":"Champ gravitationnel","Wave speed":"Vitesse de l'onde","Period & frequency":"Période et fréquence","SHM displacement":"Déplacement (MHS)","Pendulum period":"Période du pendule","Ohm's law":"Loi d'Ohm","Electrical power":"Puissance électrique","Electrical energy":"Énergie électrique","Charge":"Charge","Coulomb's law":"Loi de Coulomb","Capacitance":"Capacité","Resistivity":"Résistivité","Magnetic force on wire":"Force magnétique sur un fil","Force on moving charge":"Force sur une charge en mouvement","Heat energy":"Énergie thermique","Latent heat":"Chaleur latente","Ideal gas law":"Loi des gaz parfaits","Pressure":"Pression","Density":"Masse volumique","Mass–energy":"Équivalence masse-énergie","Photon energy":"Énergie d'un photon","de Broglie wavelength":"Longueur d'onde de de Broglie","Photoelectric effect":"Effet photoélectrique","Position (general)":"Position (cas général)","Average speed":"Vitesse moyenne","Relative velocity":"Vitesse relative","Projectile time of flight":"Temps de vol d'un projectile","Projectile max height":"Hauteur maximale d'un projectile","Free fall velocity":"Vitesse en chute libre","Free fall distance":"Distance en chute libre","Jerk":"À-coup","Tension (Atwood)":"Tension (machine d'Atwood)","Inclined plane (parallel)":"Plan incliné (composante parallèle)","Inclined plane (normal)":"Plan incliné (composante normale)","Static friction (max)":"Frottement statique (maximal)","Drag force":"Force de traînée","Terminal velocity":"Vitesse limite","Spring force constant":"Constante de raideur d'un ressort","Banked curve angle":"Angle d'un virage relevé","Conservation of momentum":"Conservation de la quantité de mouvement","Elastic collision (1D)":"Choc élastique (1D)","Coefficient of restitution":"Coefficient de restitution","Center of mass":"Centre de masse","Rocket equation":"Équation de la fusée","Angular impulse":"Impulsion angulaire","Angular acceleration":"Accélération angulaire","Rotational Newton's 2nd law":"Deuxième loi de Newton en rotation","Moment of inertia (point)":"Moment d'inertie (masse ponctuelle)","Moment of inertia (disk)":"Moment d'inertie (disque)","Moment of inertia (rod, center)":"Moment d'inertie (tige, centre)","Tangential velocity":"Vitesse tangentielle","Tangential acceleration":"Accélération tangentielle","Angular displacement":"Déplacement angulaire","Rolling kinetic energy":"Énergie cinétique de roulement","Gravitational PE (general)":"Énergie potentielle gravitationnelle (cas général)","Orbital velocity":"Vitesse orbitale","Escape velocity":"Vitesse de libération","Kepler's third law":"Troisième loi de Kepler","Gravitational potential":"Potentiel gravitationnel","Orbital period":"Période orbitale","SHM velocity":"Vitesse (MHS)","SHM acceleration":"Accélération (MHS)","SHM max velocity":"Vitesse maximale (MHS)","Mass-spring period":"Période du système masse-ressort","Angular frequency":"Pulsation","Wave equation (number)":"Équation d'onde (nombre d'onde)","Doppler effect (sound)":"Effet Doppler (son)","Standing wave frequency":"Fréquence d'une onde stationnaire","Speed of wave on string":"Vitesse d'une onde sur une corde","Intensity":"Intensité","Sound intensity level":"Niveau d'intensité sonore","Beat frequency":"Fréquence de battement","Snell's law":"Loi de Snell-Descartes","Index of refraction":"Indice de réfraction","Thin lens equation":"Équation des lentilles minces","Magnification":"Grandissement","Critical angle":"Angle critique","Mirror equation":"Équation des miroirs","Double slit (maxima)":"Double fente (maxima)","Diffraction grating":"Réseau de diffraction","Lens power":"Vergence d'une lentille","Pressure in fluid":"Pression dans un fluide","Buoyant force":"Poussée d'Archimède","Continuity equation":"Équation de continuité","Bernoulli's equation":"Équation de Bernoulli","Flow rate":"Débit","Viscous drag (Stokes)":"Traînée visqueuse (Stokes)","Reynolds number":"Nombre de Reynolds","Work–energy theorem":"Théorème de l'énergie cinétique","Power (average)":"Puissance (moyenne)","Mechanical energy":"Énergie mécanique","Gravitational PE (orbital)":"Énergie potentielle gravitationnelle (orbitale)","Resistors in series":"Résistances en série","Resistors in parallel":"Résistances en parallèle","Capacitors in parallel":"Condensateurs en parallèle","Capacitors in series":"Condensateurs en série","Power (I²R)":"Puissance (I²R)","Power (V²/R)":"Puissance (V²/R)","Electric field (point charge)":"Champ électrique (charge ponctuelle)","Electric field (force)":"Champ électrique (force)","Electric potential energy":"Énergie potentielle électrique","Electric potential":"Potentiel électrique","Capacitor energy":"Énergie d'un condensateur","Parallel plate capacitor":"Condensateur plan","Drift velocity":"Vitesse de dérive","Magnetic flux":"Flux magnétique","Faraday's law":"Loi de Faraday","Solenoid field":"Champ d'un solénoïde","Field around wire":"Champ autour d'un fil","Transformer ratio":"Rapport de transformation","RMS voltage":"Tension efficace","RMS current":"Courant efficace","Capacitive reactance":"Réactance capacitive","Inductive reactance":"Réactance inductive","Impedance (RLC)":"Impédance (RLC)","Resonant frequency":"Fréquence de résonance","Inductor energy":"Énergie d'une bobine","First law of thermodynamics":"Premier principe de la thermodynamique","Thermal expansion (linear)":"Dilatation thermique (linéaire)","Thermal expansion (volume)":"Dilatation thermique (volumique)","Heat conduction":"Conduction thermique","Carnot efficiency":"Rendement de Carnot","Entropy change":"Variation d'entropie","Average KE of gas":"Énergie cinétique moyenne d'un gaz","RMS molecular speed":"Vitesse quadratique moyenne des molécules","Work in isobaric process":"Travail dans une transformation isobare","Stefan–Boltzmann law":"Loi de Stefan-Boltzmann","Wien's displacement law":"Loi du déplacement de Wien","Relativistic momentum":"Quantité de mouvement relativiste","Lorentz factor":"Facteur de Lorentz","Time dilation":"Dilatation du temps","Length contraction":"Contraction des longueurs","Relativistic energy":"Énergie relativiste","Energy–momentum relation":"Relation énergie-quantité de mouvement","Heisenberg uncertainty":"Principe d'incertitude de Heisenberg","Bohr radius / energy":"Rayon de Bohr / énergie","Rydberg formula":"Formule de Rydberg","Compton wavelength shift":"Décalage de longueur d'onde Compton","Radioactive decay":"Désintégration radioactive","Half-life":"Demi-vie","Activity":"Activité","Mass defect energy":"Énergie du défaut de masse","Binding energy per nucleon":"Énergie de liaison par nucléon","Schwarzschild radius":"Rayon de Schwarzschild","Hubble's law":"Loi de Hubble","Luminosity (inverse square)":"Luminosité (loi en carré inverse)","Stellar luminosity":"Luminosité stellaire"}},"de":{"ui":{"title":"⚛︎ Physik-Formelsuche","sub":"Geben Sie einen Variablennamen ein (z. B. Verschiebung, Kraft, Energie), um jede Formel zu finden, die ihn verwendet.","phName":"Suche nach Variablen- oder Formelnamen…","phSym":"Suche nach Symbol… z. B. λ, v, X_C, m₁","symMode":"Suche nach Symbol (z. B. λ, v, X_C)","calcMode":"Rechner anzeigen","category":"Kategorie","all":"Alle","lang":"Sprache","formula":"Formel","formulas":"Formeln","calcHint":"Tragen Sie die bekannten Werte ein, lassen Sie ein Feld leer und klicken Sie dann auf Lösen.","solve":"Lösen","clear":"Löschen","calculator":"Rechner","inputOnly":"nur Eingabe","errNoBlank":"Lassen Sie genau ein Feld leer — das ist das Feld, für das ich auflöse.","errManyBlank":"Lassen Sie nur ein Feld leer ({n} sind leer).","errNoSolve":"Diese Formel kann hier nicht nach „{s}“ umgestellt werden. Versuchen Sie, nach einer anderen Variablen aufzulösen.","errCompute":"Berechnung nicht möglich — überprüfen Sie Ihre Eingaben.","errUndef":"Das Ergebnis ist für diese Eingaben undefiniert (z. B. Division durch null oder Definitionsbereichsfehler).","noResults":"Keine Formeln gefunden","forWord":"für","tryName":"Versuchen Sie eine Variable wie Geschwindigkeit oder Energie","trySym":"Versuchen Sie ein Symbol wie λ, v oder X_C"},"cat":{"Kinematics":"Kinematik","Dynamics":"Dynamik","Momentum":"Impuls","Energy":"Energie","Rotational":"Rotation","Gravitation":"Gravitation","Waves":"Wellen","Electricity":"Elektrizität","Thermodynamics":"Thermodynamik","Modern":"Moderne Physik","Optics":"Optik","Fluids":"Fluide","AC Circuits":"Wechselstromkreise","Nuclear":"Kernphysik","Astrophysics":"Astrophysik"},"var":{"Boltzmann constant":"Boltzmann-Konstante","Coulomb constant":"Coulomb-Konstante","EMF":"EMK","Hubble constant":"Hubble-Konstante","Lorentz factor":"Lorentzfaktor","Planck constant":"Planck-Konstante","RMS current":"Effektivstrom","RMS speed":"Effektivgeschwindigkeit","RMS voltage":"Effektivspannung","Reynolds number":"Reynolds-Zahl","Rydberg constant":"Rydberg-Konstante","Schwarzschild radius":"Schwarzschild-Radius","Stefan-Boltzmann constant":"Stefan-Boltzmann-Konstante","Wien constant":"Wien-Konstante","acceleration":"Beschleunigung","activity":"Aktivität","amplitude":"Amplitude","angle":"Winkel","angle of incidence":"Einfallswinkel","angle of refraction":"Brechungswinkel","angular acceleration":"Winkelbeschleunigung","angular displacement":"Winkelverschiebung","angular frequency":"Kreisfrequenz","angular momentum":"Drehimpuls","angular velocity":"Winkelgeschwindigkeit","area":"Fläche","average power":"mittlere Leistung","average speed":"mittlere Geschwindigkeit","beat frequency":"Schwebungsfrequenz","binding energy":"Bindungsenergie","brightness":"Helligkeit","buoyant force":"Auftriebskraft","capacitance":"Kapazität","capacitive reactance":"kapazitiver Blindwiderstand","center of mass":"Massenmittelpunkt","change in angular momentum":"Drehimpulsänderung","change in angular velocity":"Änderung der Winkelgeschwindigkeit","change in kinetic energy":"Änderung der kinetischen Energie","change in momentum":"Impulsänderung","change in velocity":"Geschwindigkeitsänderung","charge":"Ladung","charge density":"Ladungsdichte","coefficient of friction":"Reibungskoeffizient","coefficient of restitution":"Stoßzahl","coefficient of static friction":"Haftreibungskoeffizient","cold temperature":"kalte Temperatur","contracted length":"kontrahierte Länge","critical angle":"Grenzwinkel","current":"Stromstärke","decay constant":"Zerfallskonstante","density":"Dichte","depth":"Tiefe","dilated time":"dilatierte Zeit","displacement":"Verschiebung","distance":"Strecke","drag coefficient":"Widerstandsbeiwert","drag force":"Widerstandskraft","drift velocity":"Driftgeschwindigkeit","efficiency":"Wirkungsgrad","electric field":"elektrisches Feld","electric potential":"elektrisches Potential","electron mass":"Elektronenmasse","emissivity":"Emissionsgrad","energy":"Energie","energy change":"Energieänderung","energy level":"Energieniveau","entropy change":"Entropieänderung","equivalent capacitance":"Ersatzkapazität","equivalent resistance":"Ersatzwiderstand","escape velocity":"Fluchtgeschwindigkeit","exhaust velocity":"Ausströmgeschwindigkeit","expansion coefficient":"Ausdehnungskoeffizient","final mass":"Endmasse","final velocity":"Endgeschwindigkeit","flow rate":"Durchflussrate","focal length":"Brennweite","force":"Kraft","frequency":"Frequenz","friction force":"Reibungskraft","gas constant":"Gaskonstante","grating spacing":"Gitterkonstante","gravitational acceleration":"Erdbeschleunigung","gravitational constant":"Gravitationskonstante","gravitational field strength":"Gravitationsfeldstärke","gravitational potential":"Gravitationspotential","half-life":"Halbwertszeit","harmonic frequency":"Oberschwingungsfrequenz","harmonic number":"Harmonischenordnung","heat":"Wärme","heat energy":"Wärmeenergie","height":"Höhe","hot temperature":"heiße Temperatur","image distance":"Bildweite","image height":"Bildgröße","impedance":"Impedanz","impulse":"Kraftstoß","inductance":"Induktivität","inductive reactance":"induktiver Blindwiderstand","initial angular velocity":"anfängliche Winkelgeschwindigkeit","initial mass":"Anfangsmasse","initial number":"Anfangsanzahl","initial position":"Anfangsposition","initial velocity":"Anfangsgeschwindigkeit","input energy":"zugeführte Energie","intensity":"Intensität","internal energy change":"Änderung der inneren Energie","jerk":"Ruck","kinetic energy":"kinetische Energie","latent heat":"latente Wärme","length":"Länge","length change":"Längenänderung","linear density":"lineare Dichte","luminosity":"Leuchtkraft","magnetic field":"Magnetfeld","magnetic flux":"magnetischer Fluss","magnification":"Vergrößerung","mass":"Masse","mass defect":"Massendefekt","mass number":"Massenzahl","maximum height":"maximale Höhe","maximum velocity":"maximale Geschwindigkeit","mechanical energy":"mechanische Energie","moles":"Stoffmenge","moment of inertia":"Trägheitsmoment","momentum":"Impuls","momentum uncertainty":"Impulsunschärfe","normal force":"Normalkraft","number of nuclei":"Anzahl der Kerne","number of turns":"Windungszahl","number remaining":"verbleibende Anzahl","object distance":"Gegenstandsweite","object height":"Gegenstandsgröße","observed frequency":"beobachtete Frequenz","observer velocity":"Beobachtergeschwindigkeit","orbital radius":"Bahnradius","orbital velocity":"Bahngeschwindigkeit","order":"Ordnung","original length":"ursprüngliche Länge","original volume":"ursprüngliches Volumen","peak current":"Spitzenstrom","peak voltage":"Spitzenspannung","peak wavelength":"Wellenlänge des Maximums","period":"Periodendauer","permeability":"Permeabilität","permittivity":"Permittivität","position":"Position","position uncertainty":"Ortsunschärfe","potential energy":"potentielle Energie","power":"Leistung","pressure":"Druck","primary turns":"Primärwindungen","primary voltage":"Primärspannung","proper length":"Eigenlänge","proper time":"Eigenzeit","quantum number":"Quantenzahl","radius":"Radius","range":"Reichweite","recession velocity":"Fluchtgeschwindigkeit (Rezession)","reduced Planck constant":"reduzierte Planck-Konstante","reference intensity":"Bezugsintensität","refractive index":"Brechungsindex","relative velocity":"Relativgeschwindigkeit","resistance":"Widerstand","resistivity":"spezifischer Widerstand","resonant frequency":"Resonanzfrequenz","scattering angle":"Streuwinkel","secondary turns":"Sekundärwindungen","secondary voltage":"Sekundärspannung","separation":"Abstand","slit separation":"Spaltabstand","sound level":"Schallpegel","source frequency":"Quellfrequenz","source velocity":"Quellgeschwindigkeit","specific heat capacity":"spezifische Wärmekapazität","speed of light":"Lichtgeschwindigkeit","spring constant":"Federkonstante","static friction":"Haftreibung","tangential acceleration":"Tangentialbeschleunigung","temperature":"Temperatur","temperature change":"Temperaturänderung","temperature difference":"Temperaturdifferenz","tension":"Spannkraft","terminal velocity":"Endgeschwindigkeit (Sinken)","thermal conductivity":"Wärmeleitfähigkeit","thickness":"Dicke","time":"Zeit","time of flight":"Flugzeit","torque":"Drehmoment","total energy":"Gesamtenergie","turns per length":"Windungen pro Länge","useful energy":"Nutzenergie","velocity":"Geschwindigkeit","viscosity":"Viskosität","voltage":"Spannung","volume":"Volumen","volume change":"Volumenänderung","wave number":"Wellenzahl","wave velocity":"Wellengeschwindigkeit","wavelength":"Wellenlänge","wavelength shift":"Wellenlängenverschiebung","weight":"Gewichtskraft","work":"Arbeit","work function":"Austrittsarbeit"},"fname":{"Average velocity":"Mittlere Geschwindigkeit","Average acceleration":"Mittlere Beschleunigung","Velocity (constant a)":"Geschwindigkeit (konstantes a)","Displacement (suvat)":"Verschiebung (suvat)","Velocity² (suvat)":"Geschwindigkeit² (suvat)","Displacement (avg velocity)":"Verschiebung (mittlere Geschwindigkeit)","Projectile range":"Wurfweite","Newton's second law":"Zweites Newtonsches Gesetz","Weight":"Gewichtskraft","Friction force":"Reibungskraft","Hooke's law":"Hookesches Gesetz","Centripetal force":"Zentripetalkraft","Centripetal acceleration":"Zentripetalbeschleunigung","Impulse":"Kraftstoß","Linear momentum":"Linearer Impuls","Angular momentum":"Drehimpuls","Work done":"Verrichtete Arbeit","Kinetic energy":"Kinetische Energie","Gravitational PE":"Gravitationspotentielle Energie","Elastic PE":"Elastische potentielle Energie","Power":"Leistung","Power (force·velocity)":"Leistung (Kraft·Geschwindigkeit)","Efficiency":"Wirkungsgrad","Torque":"Drehmoment","Angular velocity":"Winkelgeschwindigkeit","Rotational KE":"Rotationsenergie","Newton's gravitation":"Newtonsches Gravitationsgesetz","Gravitational field":"Gravitationsfeld","Wave speed":"Wellengeschwindigkeit","Period & frequency":"Periodendauer & Frequenz","SHM displacement":"Auslenkung (harmonische Schwingung)","Pendulum period":"Pendelperiode","Ohm's law":"Ohmsches Gesetz","Electrical power":"Elektrische Leistung","Electrical energy":"Elektrische Energie","Charge":"Ladung","Coulomb's law":"Coulombsches Gesetz","Capacitance":"Kapazität","Resistivity":"Spezifischer Widerstand","Magnetic force on wire":"Magnetische Kraft auf Leiter","Force on moving charge":"Kraft auf bewegte Ladung","Heat energy":"Wärmeenergie","Latent heat":"Latente Wärme","Ideal gas law":"Ideales Gasgesetz","Pressure":"Druck","Density":"Dichte","Mass–energy":"Masse-Energie","Photon energy":"Photonenenergie","de Broglie wavelength":"De-Broglie-Wellenlänge","Photoelectric effect":"Photoelektrischer Effekt","Position (general)":"Position (allgemein)","Average speed":"Mittlere Geschwindigkeit (Betrag)","Relative velocity":"Relativgeschwindigkeit","Projectile time of flight":"Flugzeit des Wurfgeschosses","Projectile max height":"Maximale Wurfhöhe","Free fall velocity":"Geschwindigkeit im freien Fall","Free fall distance":"Fallstrecke im freien Fall","Jerk":"Ruck","Tension (Atwood)":"Seilspannung (Atwood)","Inclined plane (parallel)":"Schiefe Ebene (parallel)","Inclined plane (normal)":"Schiefe Ebene (normal)","Static friction (max)":"Haftreibung (maximal)","Drag force":"Widerstandskraft","Terminal velocity":"Endgeschwindigkeit","Spring force constant":"Federkonstante","Banked curve angle":"Neigungswinkel der Kurve","Conservation of momentum":"Impulserhaltung","Elastic collision (1D)":"Elastischer Stoß (1D)","Coefficient of restitution":"Stoßzahl","Center of mass":"Massenmittelpunkt","Rocket equation":"Raketengleichung","Angular impulse":"Drehstoß","Angular acceleration":"Winkelbeschleunigung","Rotational Newton's 2nd law":"Zweites Newtonsches Gesetz (Rotation)","Moment of inertia (point)":"Trägheitsmoment (Punktmasse)","Moment of inertia (disk)":"Trägheitsmoment (Scheibe)","Moment of inertia (rod, center)":"Trägheitsmoment (Stab, Mitte)","Tangential velocity":"Tangentialgeschwindigkeit","Tangential acceleration":"Tangentialbeschleunigung","Angular displacement":"Winkelverschiebung","Rolling kinetic energy":"Kinetische Energie beim Rollen","Gravitational PE (general)":"Gravitationspotentielle Energie (allgemein)","Orbital velocity":"Bahngeschwindigkeit","Escape velocity":"Fluchtgeschwindigkeit","Kepler's third law":"Drittes Keplersches Gesetz","Gravitational potential":"Gravitationspotential","Orbital period":"Umlaufzeit","SHM velocity":"Geschwindigkeit (harmonische Schwingung)","SHM acceleration":"Beschleunigung (harmonische Schwingung)","SHM max velocity":"Maximalgeschwindigkeit (harmonische Schwingung)","Mass-spring period":"Periode des Feder-Masse-Schwingers","Angular frequency":"Kreisfrequenz","Wave equation (number)":"Wellengleichung (Wellenzahl)","Doppler effect (sound)":"Dopplereffekt (Schall)","Standing wave frequency":"Frequenz der stehenden Welle","Speed of wave on string":"Wellengeschwindigkeit auf einer Saite","Intensity":"Intensität","Sound intensity level":"Schallintensitätspegel","Beat frequency":"Schwebungsfrequenz","Snell's law":"Snelliussches Brechungsgesetz","Index of refraction":"Brechungsindex","Thin lens equation":"Linsengleichung (dünne Linse)","Magnification":"Vergrößerung","Critical angle":"Grenzwinkel der Totalreflexion","Mirror equation":"Spiegelgleichung","Double slit (maxima)":"Doppelspalt (Maxima)","Diffraction grating":"Beugungsgitter","Lens power":"Brechkraft der Linse","Pressure in fluid":"Druck in einer Flüssigkeit","Buoyant force":"Auftriebskraft","Continuity equation":"Kontinuitätsgleichung","Bernoulli's equation":"Bernoulli-Gleichung","Flow rate":"Durchflussrate","Viscous drag (Stokes)":"Viskoser Widerstand (Stokes)","Reynolds number":"Reynolds-Zahl","Work–energy theorem":"Arbeit-Energie-Satz","Power (average)":"Leistung (mittlere)","Mechanical energy":"Mechanische Energie","Gravitational PE (orbital)":"Gravitationspotentielle Energie (Umlaufbahn)","Resistors in series":"Widerstände in Reihe","Resistors in parallel":"Widerstände parallel","Capacitors in parallel":"Kondensatoren parallel","Capacitors in series":"Kondensatoren in Reihe","Power (I²R)":"Leistung (I²R)","Power (V²/R)":"Leistung (V²/R)","Electric field (point charge)":"Elektrisches Feld (Punktladung)","Electric field (force)":"Elektrisches Feld (Kraft)","Electric potential energy":"Elektrische potentielle Energie","Electric potential":"Elektrisches Potential","Capacitor energy":"Energie eines Kondensators","Parallel plate capacitor":"Plattenkondensator","Drift velocity":"Driftgeschwindigkeit","Magnetic flux":"Magnetischer Fluss","Faraday's law":"Faradaysches Induktionsgesetz","Solenoid field":"Magnetfeld einer Spule","Field around wire":"Magnetfeld um einen Leiter","Transformer ratio":"Transformatorübersetzung","RMS voltage":"Effektivspannung","RMS current":"Effektivstrom","Capacitive reactance":"Kapazitiver Blindwiderstand","Inductive reactance":"Induktiver Blindwiderstand","Impedance (RLC)":"Impedanz (RLC)","Resonant frequency":"Resonanzfrequenz","Inductor energy":"Energie einer Spule","First law of thermodynamics":"Erster Hauptsatz der Thermodynamik","Thermal expansion (linear)":"Wärmeausdehnung (linear)","Thermal expansion (volume)":"Wärmeausdehnung (Volumen)","Heat conduction":"Wärmeleitung","Carnot efficiency":"Carnot-Wirkungsgrad","Entropy change":"Entropieänderung","Average KE of gas":"Mittlere kinetische Energie eines Gases","RMS molecular speed":"Effektive Molekülgeschwindigkeit","Work in isobaric process":"Arbeit im isobaren Prozess","Stefan–Boltzmann law":"Stefan-Boltzmann-Gesetz","Wien's displacement law":"Wiensches Verschiebungsgesetz","Relativistic momentum":"Relativistischer Impuls","Lorentz factor":"Lorentzfaktor","Time dilation":"Zeitdilatation","Length contraction":"Längenkontraktion","Relativistic energy":"Relativistische Energie","Energy–momentum relation":"Energie-Impuls-Beziehung","Heisenberg uncertainty":"Heisenbergsche Unschärferelation","Bohr radius / energy":"Bohrscher Radius / Energie","Rydberg formula":"Rydberg-Formel","Compton wavelength shift":"Compton-Wellenlängenverschiebung","Radioactive decay":"Radioaktiver Zerfall","Half-life":"Halbwertszeit","Activity":"Aktivität","Mass defect energy":"Massendefektenergie","Binding energy per nucleon":"Bindungsenergie pro Nukleon","Schwarzschild radius":"Schwarzschild-Radius","Hubble's law":"Hubble-Gesetz","Luminosity (inverse square)":"Leuchtkraft (Abstandsquadratgesetz)","Stellar luminosity":"Sternleuchtkraft"}},"zh":{"ui":{"title":"⚛︎ 物理公式搜索器","sub":"输入一个变量名（例如 位移、力、能量）即可找到所有使用该变量的公式。","phName":"按变量名或公式名搜索…","phSym":"按符号搜索… 例如 λ, v, X_C, m₁","symMode":"按符号搜索（例如 λ, v, X_C）","calcMode":"显示计算器","category":"类别","all":"全部","lang":"语言","formula":"个公式","formulas":"个公式","calcHint":"填入你已知的数值，留空一个，然后点击求解。","solve":"求解","clear":"清除","calculator":"计算器","inputOnly":"仅输入","errNoBlank":"请正好留空一个字段——那就是我将为你求解的项。","errManyBlank":"请只留空一个字段（有 {n} 个为空）。","errNoSolve":"此公式无法在此处重新整理以求解“{s}”。请尝试求解另一个变量。","errCompute":"无法计算——请检查你的输入。","errUndef":"对于这些输入，结果未定义（例如除以零或定义域错误）。","noResults":"未找到公式","forWord":"用于","tryName":"试试像速度或能量这样的变量","trySym":"试试像 λ、v 或 X_C 这样的符号"},"cat":{"Kinematics":"运动学","Dynamics":"动力学","Momentum":"动量","Energy":"能量","Rotational":"转动","Gravitation":"引力","Waves":"波动","Electricity":"电学","Thermodynamics":"热力学","Modern":"近代物理","Optics":"光学","Fluids":"流体","AC Circuits":"交流电路","Nuclear":"核物理","Astrophysics":"天体物理"},"var":{"Boltzmann constant":"玻尔兹曼常数","Coulomb constant":"库仑常数","EMF":"电动势","Hubble constant":"哈勃常数","Lorentz factor":"洛伦兹因子","Planck constant":"普朗克常数","RMS current":"电流有效值","RMS speed":"均方根速率","RMS voltage":"电压有效值","Reynolds number":"雷诺数","Rydberg constant":"里德伯常数","Schwarzschild radius":"史瓦西半径","Stefan-Boltzmann constant":"斯特藩-玻尔兹曼常数","Wien constant":"维恩常数","acceleration":"加速度","activity":"放射性活度","amplitude":"振幅","angle":"角度","angle of incidence":"入射角","angle of refraction":"折射角","angular acceleration":"角加速度","angular displacement":"角位移","angular frequency":"角频率","angular momentum":"角动量","angular velocity":"角速度","area":"面积","average power":"平均功率","average speed":"平均速率","beat frequency":"拍频","binding energy":"结合能","brightness":"亮度","buoyant force":"浮力","capacitance":"电容","capacitive reactance":"容抗","center of mass":"质心","change in angular momentum":"角动量变化量","change in angular velocity":"角速度变化量","change in kinetic energy":"动能变化量","change in momentum":"动量变化量","change in velocity":"速度变化量","charge":"电荷","charge density":"电荷密度","coefficient of friction":"摩擦系数","coefficient of restitution":"恢复系数","coefficient of static friction":"静摩擦系数","cold temperature":"低温","contracted length":"收缩长度","critical angle":"临界角","current":"电流","decay constant":"衰变常数","density":"密度","depth":"深度","dilated time":"膨胀时间","displacement":"位移","distance":"距离","drag coefficient":"阻力系数","drag force":"阻力","drift velocity":"漂移速度","efficiency":"效率","electric field":"电场","electric potential":"电势","electron mass":"电子质量","emissivity":"发射率","energy":"能量","energy change":"能量变化量","energy level":"能级","entropy change":"熵变","equivalent capacitance":"等效电容","equivalent resistance":"等效电阻","escape velocity":"逃逸速度","exhaust velocity":"排气速度","expansion coefficient":"膨胀系数","final mass":"末质量","final velocity":"末速度","flow rate":"流量","focal length":"焦距","force":"力","frequency":"频率","friction force":"摩擦力","gas constant":"气体常数","grating spacing":"光栅间距","gravitational acceleration":"重力加速度","gravitational constant":"万有引力常数","gravitational field strength":"引力场强度","gravitational potential":"引力势","half-life":"半衰期","harmonic frequency":"谐波频率","harmonic number":"谐波次数","heat":"热量","heat energy":"热能","height":"高度","hot temperature":"高温","image distance":"像距","image height":"像高","impedance":"阻抗","impulse":"冲量","inductance":"电感","inductive reactance":"感抗","initial angular velocity":"初角速度","initial mass":"初质量","initial number":"初始数量","initial position":"初始位置","initial velocity":"初速度","input energy":"输入能量","intensity":"强度","internal energy change":"内能变化量","jerk":"加加速度","kinetic energy":"动能","latent heat":"潜热","length":"长度","length change":"长度变化量","linear density":"线密度","luminosity":"光度","magnetic field":"磁场","magnetic flux":"磁通量","magnification":"放大率","mass":"质量","mass defect":"质量亏损","mass number":"质量数","maximum height":"最大高度","maximum velocity":"最大速度","mechanical energy":"机械能","moles":"摩尔数","moment of inertia":"转动惯量","momentum":"动量","momentum uncertainty":"动量不确定度","normal force":"法向力","number of nuclei":"原子核数目","number of turns":"匝数","number remaining":"剩余数量","object distance":"物距","object height":"物高","observed frequency":"观测频率","observer velocity":"观察者速度","orbital radius":"轨道半径","orbital velocity":"轨道速度","order":"级次","original length":"原长度","original volume":"原体积","peak current":"峰值电流","peak voltage":"峰值电压","peak wavelength":"峰值波长","period":"周期","permeability":"磁导率","permittivity":"介电常数","position":"位置","position uncertainty":"位置不确定度","potential energy":"势能","power":"功率","pressure":"压强","primary turns":"原线圈匝数","primary voltage":"原线圈电压","proper length":"固有长度","proper time":"固有时间","quantum number":"量子数","radius":"半径","range":"射程","recession velocity":"退行速度","reduced Planck constant":"约化普朗克常数","reference intensity":"参考强度","refractive index":"折射率","relative velocity":"相对速度","resistance":"电阻","resistivity":"电阻率","resonant frequency":"谐振频率","scattering angle":"散射角","secondary turns":"副线圈匝数","secondary voltage":"副线圈电压","separation":"间距","slit separation":"狭缝间距","sound level":"声级","source frequency":"声源频率","source velocity":"声源速度","specific heat capacity":"比热容","speed of light":"光速","spring constant":"弹簧常数","static friction":"静摩擦力","tangential acceleration":"切向加速度","temperature":"温度","temperature change":"温度变化量","temperature difference":"温差","tension":"张力","terminal velocity":"终端速度","thermal conductivity":"热导率","thickness":"厚度","time":"时间","time of flight":"飞行时间","torque":"力矩","total energy":"总能量","turns per length":"单位长度匝数","useful energy":"有用能量","velocity":"速度","viscosity":"粘度","voltage":"电压","volume":"体积","volume change":"体积变化量","wave number":"波数","wave velocity":"波速","wavelength":"波长","wavelength shift":"波长偏移","weight":"重力","work":"功","work function":"逸出功"},"fname":{"Average velocity":"平均速度","Average acceleration":"平均加速度","Velocity (constant a)":"速度（匀加速度）","Displacement (suvat)":"位移（匀变速公式）","Velocity² (suvat)":"速度²（匀变速公式）","Displacement (avg velocity)":"位移（平均速度）","Projectile range":"抛体射程","Newton's second law":"牛顿第二定律","Weight":"重力","Friction force":"摩擦力","Hooke's law":"胡克定律","Centripetal force":"向心力","Centripetal acceleration":"向心加速度","Impulse":"冲量","Linear momentum":"线动量","Angular momentum":"角动量","Work done":"做功","Kinetic energy":"动能","Gravitational PE":"重力势能","Elastic PE":"弹性势能","Power":"功率","Power (force·velocity)":"功率（力·速度）","Efficiency":"效率","Torque":"力矩","Angular velocity":"角速度","Rotational KE":"转动动能","Newton's gravitation":"牛顿万有引力定律","Gravitational field":"引力场","Wave speed":"波速","Period & frequency":"周期与频率","SHM displacement":"简谐运动位移","Pendulum period":"单摆周期","Ohm's law":"欧姆定律","Electrical power":"电功率","Electrical energy":"电能","Charge":"电荷","Coulomb's law":"库仑定律","Capacitance":"电容","Resistivity":"电阻率","Magnetic force on wire":"导线所受磁场力","Force on moving charge":"运动电荷所受力","Heat energy":"热能","Latent heat":"潜热","Ideal gas law":"理想气体定律","Pressure":"压强","Density":"密度","Mass–energy":"质能关系","Photon energy":"光子能量","de Broglie wavelength":"德布罗意波长","Photoelectric effect":"光电效应","Position (general)":"位置（通用）","Average speed":"平均速率","Relative velocity":"相对速度","Projectile time of flight":"抛体飞行时间","Projectile max height":"抛体最大高度","Free fall velocity":"自由落体速度","Free fall distance":"自由落体距离","Jerk":"加加速度","Tension (Atwood)":"张力（阿特伍德机）","Inclined plane (parallel)":"斜面（平行方向）","Inclined plane (normal)":"斜面（法向）","Static friction (max)":"静摩擦力（最大）","Drag force":"阻力","Terminal velocity":"终端速度","Spring force constant":"弹簧劲度系数","Banked curve angle":"倾斜弯道角度","Conservation of momentum":"动量守恒","Elastic collision (1D)":"弹性碰撞（一维）","Coefficient of restitution":"恢复系数","Center of mass":"质心","Rocket equation":"火箭方程","Angular impulse":"角冲量","Angular acceleration":"角加速度","Rotational Newton's 2nd law":"转动牛顿第二定律","Moment of inertia (point)":"转动惯量（质点）","Moment of inertia (disk)":"转动惯量（圆盘）","Moment of inertia (rod, center)":"转动惯量（杆，中心轴）","Tangential velocity":"切向速度","Tangential acceleration":"切向加速度","Angular displacement":"角位移","Rolling kinetic energy":"滚动动能","Gravitational PE (general)":"重力势能（通用）","Orbital velocity":"轨道速度","Escape velocity":"逃逸速度","Kepler's third law":"开普勒第三定律","Gravitational potential":"引力势","Orbital period":"轨道周期","SHM velocity":"简谐运动速度","SHM acceleration":"简谐运动加速度","SHM max velocity":"简谐运动最大速度","Mass-spring period":"弹簧振子周期","Angular frequency":"角频率","Wave equation (number)":"波动方程（波数）","Doppler effect (sound)":"多普勒效应（声音）","Standing wave frequency":"驻波频率","Speed of wave on string":"弦上波速","Intensity":"强度","Sound intensity level":"声强级","Beat frequency":"拍频","Snell's law":"斯涅尔定律","Index of refraction":"折射率","Thin lens equation":"薄透镜公式","Magnification":"放大率","Critical angle":"临界角","Mirror equation":"面镜公式","Double slit (maxima)":"双缝（亮纹）","Diffraction grating":"衍射光栅","Lens power":"透镜光焦度","Pressure in fluid":"流体中的压强","Buoyant force":"浮力","Continuity equation":"连续性方程","Bernoulli's equation":"伯努利方程","Flow rate":"流量","Viscous drag (Stokes)":"粘滞阻力（斯托克斯）","Reynolds number":"雷诺数","Work–energy theorem":"动能定理","Power (average)":"功率（平均）","Mechanical energy":"机械能","Gravitational PE (orbital)":"重力势能（轨道）","Resistors in series":"电阻串联","Resistors in parallel":"电阻并联","Capacitors in parallel":"电容并联","Capacitors in series":"电容串联","Power (I²R)":"功率（I²R）","Power (V²/R)":"功率（V²/R）","Electric field (point charge)":"电场（点电荷）","Electric field (force)":"电场（力）","Electric potential energy":"电势能","Electric potential":"电势","Capacitor energy":"电容器储能","Parallel plate capacitor":"平行板电容器","Drift velocity":"漂移速度","Magnetic flux":"磁通量","Faraday's law":"法拉第定律","Solenoid field":"螺线管磁场","Field around wire":"导线周围磁场","Transformer ratio":"变压器变比","RMS voltage":"电压有效值","RMS current":"电流有效值","Capacitive reactance":"容抗","Inductive reactance":"感抗","Impedance (RLC)":"阻抗（RLC）","Resonant frequency":"谐振频率","Inductor energy":"电感储能","First law of thermodynamics":"热力学第一定律","Thermal expansion (linear)":"热膨胀（线膨胀）","Thermal expansion (volume)":"热膨胀（体膨胀）","Heat conduction":"热传导","Carnot efficiency":"卡诺效率","Entropy change":"熵变","Average KE of gas":"气体平均动能","RMS molecular speed":"分子均方根速率","Work in isobaric process":"等压过程做功","Stefan–Boltzmann law":"斯特藩-玻尔兹曼定律","Wien's displacement law":"维恩位移定律","Relativistic momentum":"相对论动量","Lorentz factor":"洛伦兹因子","Time dilation":"时间膨胀","Length contraction":"长度收缩","Relativistic energy":"相对论能量","Energy–momentum relation":"能量-动量关系","Heisenberg uncertainty":"海森堡不确定性原理","Bohr radius / energy":"玻尔半径 / 能量","Rydberg formula":"里德伯公式","Compton wavelength shift":"康普顿波长偏移","Radioactive decay":"放射性衰变","Half-life":"半衰期","Activity":"放射性活度","Mass defect energy":"质量亏损能量","Binding energy per nucleon":"每核子结合能","Schwarzschild radius":"史瓦西半径","Hubble's law":"哈勃定律","Luminosity (inverse square)":"光度（平方反比）","Stellar luminosity":"恒星光度"}}};
+
+// ===== i18n helpers =====
+let lang = (function(){ try { return localStorage.getItem('pf_lang') || 'en'; } catch(e){ return 'en'; } })();
+if(!I18N[lang]) lang = 'en';
+function t(k){ return (I18N[lang] && I18N[lang].ui && I18N[lang].ui[k]) || I18N.en.ui[k] || k; }
+function catLabel(c){ return (lang!=='en' && I18N[lang].cat && I18N[lang].cat[c]) || c; }
+function varLabel(n){ return (lang!=='en' && I18N[lang].var && I18N[lang].var[n]) || n; }
+function fnameLabel(n){ return (lang!=='en' && I18N[lang].fname && I18N[lang].fname[n]) || n; }
+function cssEsc(s){ return (typeof CSS!=='undefined' && CSS.escape) ? CSS.escape(s) : String(s).replace(/["\\]/g,'\\$&'); }
+
+// Each formula: name, category, expr (display), and vars: {symbol, name}
+// "name" fields are what variable searches match against.
+const FORMULAS = [
+  // ---- Kinematics ----
+  { name: "Average velocity", cat: "Kinematics", expr: "v = Δx / Δt",
+    vars: [["v","velocity"],["Δx","displacement"],["Δt","time"]] },
+  { name: "Average acceleration", cat: "Kinematics", expr: "a = Δv / Δt",
+    vars: [["a","acceleration"],["Δv","change in velocity"],["Δt","time"]] },
+  { name: "Velocity (constant a)", cat: "Kinematics", expr: "v = u + a·t",
+    vars: [["v","final velocity"],["u","initial velocity"],["a","acceleration"],["t","time"]] },
+  { name: "Displacement (suvat)", cat: "Kinematics", expr: "s = u·t + ½·a·t²",
+    vars: [["s","displacement"],["u","initial velocity"],["a","acceleration"],["t","time"]] },
+  { name: "Velocity² (suvat)", cat: "Kinematics", expr: "v² = u² + 2·a·s",
+    vars: [["v","final velocity"],["u","initial velocity"],["a","acceleration"],["s","displacement"]] },
+  { name: "Displacement (avg velocity)", cat: "Kinematics", expr: "s = ½·(u + v)·t",
+    vars: [["s","displacement"],["u","initial velocity"],["v","final velocity"],["t","time"]] },
+  { name: "Projectile range", cat: "Kinematics", expr: "R = (v²·sin2θ) / g",
+    vars: [["R","range"],["v","velocity"],["θ","angle"],["g","gravitational acceleration"]] },
+
+  // ---- Dynamics / Forces ----
+  { name: "Newton's second law", cat: "Dynamics", expr: "F = m·a",
+    vars: [["F","force"],["m","mass"],["a","acceleration"]] },
+  { name: "Weight", cat: "Dynamics", expr: "W = m·g",
+    vars: [["W","weight"],["m","mass"],["g","gravitational acceleration"]] },
+  { name: "Friction force", cat: "Dynamics", expr: "f = μ·N",
+    vars: [["f","friction force"],["μ","coefficient of friction"],["N","normal force"]] },
+  { name: "Hooke's law", cat: "Dynamics", expr: "F = -k·x",
+    vars: [["F","force"],["k","spring constant"],["x","displacement"]] },
+  { name: "Centripetal force", cat: "Dynamics", expr: "F = m·v² / r",
+    vars: [["F","force"],["m","mass"],["v","velocity"],["r","radius"]] },
+  { name: "Centripetal acceleration", cat: "Dynamics", expr: "a = v² / r",
+    vars: [["a","acceleration"],["v","velocity"],["r","radius"]] },
+  { name: "Impulse", cat: "Dynamics", expr: "J = F·Δt = Δp",
+    vars: [["J","impulse"],["F","force"],["Δt","time"],["Δp","change in momentum"]] },
+
+  // ---- Momentum ----
+  { name: "Linear momentum", cat: "Momentum", expr: "p = m·v",
+    vars: [["p","momentum"],["m","mass"],["v","velocity"]] },
+  { name: "Angular momentum", cat: "Momentum", expr: "L = I·ω",
+    vars: [["L","angular momentum"],["I","moment of inertia"],["ω","angular velocity"]] },
+
+  // ---- Energy & Work ----
+  { name: "Work done", cat: "Energy", expr: "W = F·d·cosθ",
+    vars: [["W","work"],["F","force"],["d","displacement"],["θ","angle"]] },
+  { name: "Kinetic energy", cat: "Energy", expr: "KE = ½·m·v²",
+    vars: [["KE","kinetic energy"],["m","mass"],["v","velocity"]] },
+  { name: "Gravitational PE", cat: "Energy", expr: "PE = m·g·h",
+    vars: [["PE","potential energy"],["m","mass"],["g","gravitational acceleration"],["h","height"]] },
+  { name: "Elastic PE", cat: "Energy", expr: "PE = ½·k·x²",
+    vars: [["PE","potential energy"],["k","spring constant"],["x","displacement"]] },
+  { name: "Power", cat: "Energy", expr: "P = W / t",
+    vars: [["P","power"],["W","work"],["t","time"]] },
+  { name: "Power (force·velocity)", cat: "Energy", expr: "P = F·v",
+    vars: [["P","power"],["F","force"],["v","velocity"]] },
+  { name: "Efficiency", cat: "Energy", expr: "η = E_out / E_in",
+    vars: [["η","efficiency"],["E_out","useful energy"],["E_in","input energy"]] },
+
+  // ---- Rotational ----
+  { name: "Torque", cat: "Rotational", expr: "τ = r·F·sinθ",
+    vars: [["τ","torque"],["r","radius"],["F","force"],["θ","angle"]] },
+  { name: "Angular velocity", cat: "Rotational", expr: "ω = θ / t",
+    vars: [["ω","angular velocity"],["θ","angle"],["t","time"]] },
+  { name: "Rotational KE", cat: "Rotational", expr: "KE = ½·I·ω²",
+    vars: [["KE","kinetic energy"],["I","moment of inertia"],["ω","angular velocity"]] },
+
+  // ---- Gravitation ----
+  { name: "Newton's gravitation", cat: "Gravitation", expr: "F = G·m₁·m₂ / r²",
+    vars: [["F","force"],["G","gravitational constant"],["m₁","mass"],["m₂","mass"],["r","distance"]] },
+  { name: "Gravitational field", cat: "Gravitation", expr: "g = G·M / r²",
+    vars: [["g","gravitational field strength"],["G","gravitational constant"],["M","mass"],["r","distance"]] },
+
+  // ---- Waves & Sound ----
+  { name: "Wave speed", cat: "Waves", expr: "v = f·λ",
+    vars: [["v","velocity"],["f","frequency"],["λ","wavelength"]] },
+  { name: "Period & frequency", cat: "Waves", expr: "T = 1 / f",
+    vars: [["T","period"],["f","frequency"]] },
+  { name: "SHM displacement", cat: "Waves", expr: "x = A·cos(ω·t)",
+    vars: [["x","displacement"],["A","amplitude"],["ω","angular frequency"],["t","time"]] },
+  { name: "Pendulum period", cat: "Waves", expr: "T = 2π·√(L / g)",
+    vars: [["T","period"],["L","length"],["g","gravitational acceleration"]] },
+
+  // ---- Electricity & Magnetism ----
+  { name: "Ohm's law", cat: "Electricity", expr: "V = I·R",
+    vars: [["V","voltage"],["I","current"],["R","resistance"]] },
+  { name: "Electrical power", cat: "Electricity", expr: "P = V·I",
+    vars: [["P","power"],["V","voltage"],["I","current"]] },
+  { name: "Electrical energy", cat: "Electricity", expr: "E = V·I·t",
+    vars: [["E","energy"],["V","voltage"],["I","current"],["t","time"]] },
+  { name: "Charge", cat: "Electricity", expr: "Q = I·t",
+    vars: [["Q","charge"],["I","current"],["t","time"]] },
+  { name: "Coulomb's law", cat: "Electricity", expr: "F = k·q₁·q₂ / r²",
+    vars: [["F","force"],["k","Coulomb constant"],["q₁","charge"],["q₂","charge"],["r","distance"]] },
+  { name: "Capacitance", cat: "Electricity", expr: "C = Q / V",
+    vars: [["C","capacitance"],["Q","charge"],["V","voltage"]] },
+  { name: "Resistivity", cat: "Electricity", expr: "R = ρ·L / A",
+    vars: [["R","resistance"],["ρ","resistivity"],["L","length"],["A","area"]] },
+  { name: "Magnetic force on wire", cat: "Electricity", expr: "F = B·I·L",
+    vars: [["F","force"],["B","magnetic field"],["I","current"],["L","length"]] },
+  { name: "Force on moving charge", cat: "Electricity", expr: "F = q·v·B",
+    vars: [["F","force"],["q","charge"],["v","velocity"],["B","magnetic field"]] },
+
+  // ---- Thermodynamics ----
+  { name: "Heat energy", cat: "Thermodynamics", expr: "Q = m·c·ΔT",
+    vars: [["Q","heat energy"],["m","mass"],["c","specific heat capacity"],["ΔT","temperature change"]] },
+  { name: "Latent heat", cat: "Thermodynamics", expr: "Q = m·L",
+    vars: [["Q","heat energy"],["m","mass"],["L","latent heat"]] },
+  { name: "Ideal gas law", cat: "Thermodynamics", expr: "P·V = n·R·T",
+    vars: [["P","pressure"],["V","volume"],["n","moles"],["R","gas constant"],["T","temperature"]] },
+  { name: "Pressure", cat: "Thermodynamics", expr: "P = F / A",
+    vars: [["P","pressure"],["F","force"],["A","area"]] },
+  { name: "Density", cat: "Thermodynamics", expr: "ρ = m / V",
+    vars: [["ρ","density"],["m","mass"],["V","volume"]] },
+
+  // ---- Modern Physics ----
+  { name: "Mass–energy", cat: "Modern", expr: "E = m·c²",
+    vars: [["E","energy"],["m","mass"],["c","speed of light"]] },
+  { name: "Photon energy", cat: "Modern", expr: "E = h·f",
+    vars: [["E","energy"],["h","Planck constant"],["f","frequency"]] },
+  { name: "de Broglie wavelength", cat: "Modern", expr: "λ = h / p",
+    vars: [["λ","wavelength"],["h","Planck constant"],["p","momentum"]] },
+  { name: "Photoelectric effect", cat: "Modern", expr: "E = h·f − φ",
+    vars: [["E","kinetic energy"],["h","Planck constant"],["f","frequency"],["φ","work function"]] },
+
+  // ---- More Kinematics ----
+  { name: "Position (general)", cat: "Kinematics", expr: "x = x₀ + v₀·t + ½·a·t²",
+    vars: [["x","position"],["x₀","initial position"],["v₀","initial velocity"],["a","acceleration"],["t","time"]] },
+  { name: "Average speed", cat: "Kinematics", expr: "v̄ = d / t",
+    vars: [["v̄","average speed"],["d","distance"],["t","time"]] },
+  { name: "Relative velocity", cat: "Kinematics", expr: "v_AB = v_A − v_B",
+    vars: [["v_AB","relative velocity"],["v_A","velocity"],["v_B","velocity"]] },
+  { name: "Projectile time of flight", cat: "Kinematics", expr: "t = 2·v·sinθ / g",
+    vars: [["t","time of flight"],["v","velocity"],["θ","angle"],["g","gravitational acceleration"]] },
+  { name: "Projectile max height", cat: "Kinematics", expr: "H = v²·sin²θ / (2·g)",
+    vars: [["H","maximum height"],["v","velocity"],["θ","angle"],["g","gravitational acceleration"]] },
+  { name: "Free fall velocity", cat: "Kinematics", expr: "v = g·t",
+    vars: [["v","velocity"],["g","gravitational acceleration"],["t","time"]] },
+  { name: "Free fall distance", cat: "Kinematics", expr: "h = ½·g·t²",
+    vars: [["h","height"],["g","gravitational acceleration"],["t","time"]] },
+  { name: "Jerk", cat: "Kinematics", expr: "j = da / dt",
+    vars: [["j","jerk"],["a","acceleration"],["t","time"]] },
+
+  // ---- More Dynamics ----
+  { name: "Tension (Atwood)", cat: "Dynamics", expr: "T = 2·m₁·m₂·g / (m₁+m₂)",
+    vars: [["T","tension"],["m₁","mass"],["m₂","mass"],["g","gravitational acceleration"]] },
+  { name: "Inclined plane (parallel)", cat: "Dynamics", expr: "F = m·g·sinθ",
+    vars: [["F","force"],["m","mass"],["g","gravitational acceleration"],["θ","angle"]] },
+  { name: "Inclined plane (normal)", cat: "Dynamics", expr: "N = m·g·cosθ",
+    vars: [["N","normal force"],["m","mass"],["g","gravitational acceleration"],["θ","angle"]] },
+  { name: "Static friction (max)", cat: "Dynamics", expr: "f_s = μ_s·N",
+    vars: [["f_s","static friction"],["μ_s","coefficient of static friction"],["N","normal force"]] },
+  { name: "Drag force", cat: "Dynamics", expr: "F_d = ½·ρ·v²·C_d·A",
+    vars: [["F_d","drag force"],["ρ","density"],["v","velocity"],["C_d","drag coefficient"],["A","area"]] },
+  { name: "Terminal velocity", cat: "Dynamics", expr: "v_t = √(2·m·g / (ρ·A·C_d))",
+    vars: [["v_t","terminal velocity"],["m","mass"],["g","gravitational acceleration"],["ρ","density"],["A","area"],["C_d","drag coefficient"]] },
+  { name: "Spring force constant", cat: "Dynamics", expr: "k = F / x",
+    vars: [["k","spring constant"],["F","force"],["x","displacement"]] },
+  { name: "Banked curve angle", cat: "Dynamics", expr: "tanθ = v² / (r·g)",
+    vars: [["θ","angle"],["v","velocity"],["r","radius"],["g","gravitational acceleration"]] },
+
+  // ---- More Momentum ----
+  { name: "Conservation of momentum", cat: "Momentum", expr: "m₁·u₁ + m₂·u₂ = m₁·v₁ + m₂·v₂",
+    vars: [["m₁","mass"],["m₂","mass"],["u₁","initial velocity"],["u₂","initial velocity"],["v₁","final velocity"],["v₂","final velocity"]] },
+  { name: "Elastic collision (1D)", cat: "Momentum", expr: "v₁ = ((m₁−m₂)·u₁ + 2·m₂·u₂)/(m₁+m₂)",
+    vars: [["v₁","final velocity"],["m₁","mass"],["m₂","mass"],["u₁","initial velocity"],["u₂","initial velocity"]] },
+  { name: "Coefficient of restitution", cat: "Momentum", expr: "e = (v₂−v₁)/(u₁−u₂)",
+    vars: [["e","coefficient of restitution"],["v₁","final velocity"],["v₂","final velocity"],["u₁","initial velocity"],["u₂","initial velocity"]] },
+  { name: "Center of mass", cat: "Momentum", expr: "x_cm = Σ(mᵢ·xᵢ) / Σmᵢ",
+    vars: [["x_cm","center of mass"],["mᵢ","mass"],["xᵢ","position"]] },
+  { name: "Rocket equation", cat: "Momentum", expr: "Δv = v_e·ln(m₀/m_f)",
+    vars: [["Δv","change in velocity"],["v_e","exhaust velocity"],["m₀","initial mass"],["m_f","final mass"]] },
+  { name: "Angular impulse", cat: "Momentum", expr: "ΔL = τ·Δt",
+    vars: [["ΔL","change in angular momentum"],["τ","torque"],["Δt","time"]] },
+
+  // ---- More Rotational ----
+  { name: "Angular acceleration", cat: "Rotational", expr: "α = Δω / Δt",
+    vars: [["α","angular acceleration"],["Δω","change in angular velocity"],["Δt","time"]] },
+  { name: "Rotational Newton's 2nd law", cat: "Rotational", expr: "τ = I·α",
+    vars: [["τ","torque"],["I","moment of inertia"],["α","angular acceleration"]] },
+  { name: "Moment of inertia (point)", cat: "Rotational", expr: "I = m·r²",
+    vars: [["I","moment of inertia"],["m","mass"],["r","radius"]] },
+  { name: "Moment of inertia (disk)", cat: "Rotational", expr: "I = ½·m·r²",
+    vars: [["I","moment of inertia"],["m","mass"],["r","radius"]] },
+  { name: "Moment of inertia (rod, center)", cat: "Rotational", expr: "I = (1/12)·m·L²",
+    vars: [["I","moment of inertia"],["m","mass"],["L","length"]] },
+  { name: "Tangential velocity", cat: "Rotational", expr: "v = r·ω",
+    vars: [["v","velocity"],["r","radius"],["ω","angular velocity"]] },
+  { name: "Tangential acceleration", cat: "Rotational", expr: "a_t = r·α",
+    vars: [["a_t","tangential acceleration"],["r","radius"],["α","angular acceleration"]] },
+  { name: "Angular displacement", cat: "Rotational", expr: "θ = ω₀·t + ½·α·t²",
+    vars: [["θ","angular displacement"],["ω₀","initial angular velocity"],["α","angular acceleration"],["t","time"]] },
+  { name: "Rolling kinetic energy", cat: "Rotational", expr: "KE = ½·m·v² + ½·I·ω²",
+    vars: [["KE","kinetic energy"],["m","mass"],["v","velocity"],["I","moment of inertia"],["ω","angular velocity"]] },
+
+  // ---- More Gravitation ----
+  { name: "Gravitational PE (general)", cat: "Gravitation", expr: "U = −G·m₁·m₂ / r",
+    vars: [["U","potential energy"],["G","gravitational constant"],["m₁","mass"],["m₂","mass"],["r","distance"]] },
+  { name: "Orbital velocity", cat: "Gravitation", expr: "v = √(G·M / r)",
+    vars: [["v","orbital velocity"],["G","gravitational constant"],["M","mass"],["r","radius"]] },
+  { name: "Escape velocity", cat: "Gravitation", expr: "v_e = √(2·G·M / r)",
+    vars: [["v_e","escape velocity"],["G","gravitational constant"],["M","mass"],["r","radius"]] },
+  { name: "Kepler's third law", cat: "Gravitation", expr: "T² = (4π²/G·M)·r³",
+    vars: [["T","period"],["G","gravitational constant"],["M","mass"],["r","orbital radius"]] },
+  { name: "Gravitational potential", cat: "Gravitation", expr: "V = −G·M / r",
+    vars: [["V","gravitational potential"],["G","gravitational constant"],["M","mass"],["r","distance"]] },
+  { name: "Orbital period", cat: "Gravitation", expr: "T = 2π·√(r³ / (G·M))",
+    vars: [["T","period"],["r","orbital radius"],["G","gravitational constant"],["M","mass"]] },
+
+  // ---- More Waves & SHM ----
+  { name: "SHM velocity", cat: "Waves", expr: "v = −A·ω·sin(ω·t)",
+    vars: [["v","velocity"],["A","amplitude"],["ω","angular frequency"],["t","time"]] },
+  { name: "SHM acceleration", cat: "Waves", expr: "a = −ω²·x",
+    vars: [["a","acceleration"],["ω","angular frequency"],["x","displacement"]] },
+  { name: "SHM max velocity", cat: "Waves", expr: "v_max = A·ω",
+    vars: [["v_max","maximum velocity"],["A","amplitude"],["ω","angular frequency"]] },
+  { name: "Mass-spring period", cat: "Waves", expr: "T = 2π·√(m / k)",
+    vars: [["T","period"],["m","mass"],["k","spring constant"]] },
+  { name: "Angular frequency", cat: "Waves", expr: "ω = 2π·f",
+    vars: [["ω","angular frequency"],["f","frequency"]] },
+  { name: "Wave equation (number)", cat: "Waves", expr: "k = 2π / λ",
+    vars: [["k","wave number"],["λ","wavelength"]] },
+  { name: "Doppler effect (sound)", cat: "Waves", expr: "f' = f·(v ± v_o)/(v ∓ v_s)",
+    vars: [["f'","observed frequency"],["f","source frequency"],["v","wave velocity"],["v_o","observer velocity"],["v_s","source velocity"]] },
+  { name: "Standing wave frequency", cat: "Waves", expr: "f_n = n·v / (2·L)",
+    vars: [["f_n","harmonic frequency"],["n","harmonic number"],["v","velocity"],["L","length"]] },
+  { name: "Speed of wave on string", cat: "Waves", expr: "v = √(T / μ)",
+    vars: [["v","velocity"],["T","tension"],["μ","linear density"]] },
+  { name: "Intensity", cat: "Waves", expr: "I = P / A",
+    vars: [["I","intensity"],["P","power"],["A","area"]] },
+  { name: "Sound intensity level", cat: "Waves", expr: "β = 10·log(I / I₀)",
+    vars: [["β","sound level"],["I","intensity"],["I₀","reference intensity"]] },
+  { name: "Beat frequency", cat: "Waves", expr: "f_beat = |f₁ − f₂|",
+    vars: [["f_beat","beat frequency"],["f₁","frequency"],["f₂","frequency"]] },
+
+  // ---- Optics ----
+  { name: "Snell's law", cat: "Optics", expr: "n₁·sinθ₁ = n₂·sinθ₂",
+    vars: [["n₁","refractive index"],["n₂","refractive index"],["θ₁","angle of incidence"],["θ₂","angle of refraction"]] },
+  { name: "Index of refraction", cat: "Optics", expr: "n = c / v",
+    vars: [["n","refractive index"],["c","speed of light"],["v","velocity"]] },
+  { name: "Thin lens equation", cat: "Optics", expr: "1/f = 1/d_o + 1/d_i",
+    vars: [["f","focal length"],["d_o","object distance"],["d_i","image distance"]] },
+  { name: "Magnification", cat: "Optics", expr: "M = −d_i / d_o = h_i / h_o",
+    vars: [["M","magnification"],["d_i","image distance"],["d_o","object distance"],["h_i","image height"],["h_o","object height"]] },
+  { name: "Critical angle", cat: "Optics", expr: "sinθ_c = n₂ / n₁",
+    vars: [["θ_c","critical angle"],["n₁","refractive index"],["n₂","refractive index"]] },
+  { name: "Mirror equation", cat: "Optics", expr: "1/f = 1/d_o + 1/d_i",
+    vars: [["f","focal length"],["d_o","object distance"],["d_i","image distance"]] },
+  { name: "Double slit (maxima)", cat: "Optics", expr: "d·sinθ = m·λ",
+    vars: [["d","slit separation"],["θ","angle"],["m","order"],["λ","wavelength"]] },
+  { name: "Diffraction grating", cat: "Optics", expr: "d·sinθ = n·λ",
+    vars: [["d","grating spacing"],["θ","angle"],["n","order"],["λ","wavelength"]] },
+  { name: "Lens power", cat: "Optics", expr: "P = 1 / f",
+    vars: [["P","power"],["f","focal length"]] },
+
+  // ---- Fluids ----
+  { name: "Pressure in fluid", cat: "Fluids", expr: "P = ρ·g·h",
+    vars: [["P","pressure"],["ρ","density"],["g","gravitational acceleration"],["h","depth"]] },
+  { name: "Buoyant force", cat: "Fluids", expr: "F_b = ρ·g·V",
+    vars: [["F_b","buoyant force"],["ρ","density"],["g","gravitational acceleration"],["V","volume"]] },
+  { name: "Continuity equation", cat: "Fluids", expr: "A₁·v₁ = A₂·v₂",
+    vars: [["A₁","area"],["A₂","area"],["v₁","velocity"],["v₂","velocity"]] },
+  { name: "Bernoulli's equation", cat: "Fluids", expr: "P + ½·ρ·v² + ρ·g·h = const",
+    vars: [["P","pressure"],["ρ","density"],["v","velocity"],["g","gravitational acceleration"],["h","height"]] },
+  { name: "Flow rate", cat: "Fluids", expr: "Q = A·v",
+    vars: [["Q","flow rate"],["A","area"],["v","velocity"]] },
+  { name: "Viscous drag (Stokes)", cat: "Fluids", expr: "F = 6π·η·r·v",
+    vars: [["F","force"],["η","viscosity"],["r","radius"],["v","velocity"]] },
+  { name: "Reynolds number", cat: "Fluids", expr: "Re = ρ·v·L / η",
+    vars: [["Re","Reynolds number"],["ρ","density"],["v","velocity"],["L","length"],["η","viscosity"]] },
+
+  // ---- More Energy ----
+  { name: "Work–energy theorem", cat: "Energy", expr: "W = ΔKE",
+    vars: [["W","work"],["ΔKE","change in kinetic energy"]] },
+  { name: "Power (average)", cat: "Energy", expr: "P̄ = ΔE / Δt",
+    vars: [["P̄","average power"],["ΔE","energy change"],["Δt","time"]] },
+  { name: "Mechanical energy", cat: "Energy", expr: "E = KE + PE",
+    vars: [["E","mechanical energy"],["KE","kinetic energy"],["PE","potential energy"]] },
+  { name: "Gravitational PE (orbital)", cat: "Energy", expr: "E = −G·M·m / (2·r)",
+    vars: [["E","total energy"],["G","gravitational constant"],["M","mass"],["m","mass"],["r","radius"]] },
+
+  // ---- More Electricity ----
+  { name: "Resistors in series", cat: "Electricity", expr: "R_eq = R₁ + R₂ + …",
+    vars: [["R_eq","equivalent resistance"],["R₁","resistance"],["R₂","resistance"]] },
+  { name: "Resistors in parallel", cat: "Electricity", expr: "1/R_eq = 1/R₁ + 1/R₂ + …",
+    vars: [["R_eq","equivalent resistance"],["R₁","resistance"],["R₂","resistance"]] },
+  { name: "Capacitors in parallel", cat: "Electricity", expr: "C_eq = C₁ + C₂ + …",
+    vars: [["C_eq","equivalent capacitance"],["C₁","capacitance"],["C₂","capacitance"]] },
+  { name: "Capacitors in series", cat: "Electricity", expr: "1/C_eq = 1/C₁ + 1/C₂ + …",
+    vars: [["C_eq","equivalent capacitance"],["C₁","capacitance"],["C₂","capacitance"]] },
+  { name: "Power (I²R)", cat: "Electricity", expr: "P = I²·R",
+    vars: [["P","power"],["I","current"],["R","resistance"]] },
+  { name: "Power (V²/R)", cat: "Electricity", expr: "P = V² / R",
+    vars: [["P","power"],["V","voltage"],["R","resistance"]] },
+  { name: "Electric field (point charge)", cat: "Electricity", expr: "E = k·q / r²",
+    vars: [["E","electric field"],["k","Coulomb constant"],["q","charge"],["r","distance"]] },
+  { name: "Electric field (force)", cat: "Electricity", expr: "E = F / q",
+    vars: [["E","electric field"],["F","force"],["q","charge"]] },
+  { name: "Electric potential energy", cat: "Electricity", expr: "U = k·q₁·q₂ / r",
+    vars: [["U","potential energy"],["k","Coulomb constant"],["q₁","charge"],["q₂","charge"],["r","distance"]] },
+  { name: "Electric potential", cat: "Electricity", expr: "V = k·q / r",
+    vars: [["V","electric potential"],["k","Coulomb constant"],["q","charge"],["r","distance"]] },
+  { name: "Capacitor energy", cat: "Electricity", expr: "E = ½·C·V²",
+    vars: [["E","energy"],["C","capacitance"],["V","voltage"]] },
+  { name: "Parallel plate capacitor", cat: "Electricity", expr: "C = ε₀·A / d",
+    vars: [["C","capacitance"],["ε₀","permittivity"],["A","area"],["d","separation"]] },
+  { name: "Drift velocity", cat: "Electricity", expr: "I = n·A·q·v_d",
+    vars: [["I","current"],["n","charge density"],["A","area"],["q","charge"],["v_d","drift velocity"]] },
+  { name: "Magnetic flux", cat: "Electricity", expr: "Φ = B·A·cosθ",
+    vars: [["Φ","magnetic flux"],["B","magnetic field"],["A","area"],["θ","angle"]] },
+  { name: "Faraday's law", cat: "Electricity", expr: "ε = −N·dΦ/dt",
+    vars: [["ε","EMF"],["N","number of turns"],["Φ","magnetic flux"],["t","time"]] },
+  { name: "Solenoid field", cat: "Electricity", expr: "B = μ₀·n·I",
+    vars: [["B","magnetic field"],["μ₀","permeability"],["n","turns per length"],["I","current"]] },
+  { name: "Field around wire", cat: "Electricity", expr: "B = μ₀·I / (2π·r)",
+    vars: [["B","magnetic field"],["μ₀","permeability"],["I","current"],["r","distance"]] },
+  { name: "Transformer ratio", cat: "Electricity", expr: "V_s/V_p = N_s/N_p",
+    vars: [["V_s","secondary voltage"],["V_p","primary voltage"],["N_s","secondary turns"],["N_p","primary turns"]] },
+
+  // ---- AC Circuits ----
+  { name: "RMS voltage", cat: "AC Circuits", expr: "V_rms = V₀ / √2",
+    vars: [["V_rms","RMS voltage"],["V₀","peak voltage"]] },
+  { name: "RMS current", cat: "AC Circuits", expr: "I_rms = I₀ / √2",
+    vars: [["I_rms","RMS current"],["I₀","peak current"]] },
+  { name: "Capacitive reactance", cat: "AC Circuits", expr: "X_C = 1 / (2π·f·C)",
+    vars: [["X_C","capacitive reactance"],["f","frequency"],["C","capacitance"]] },
+  { name: "Inductive reactance", cat: "AC Circuits", expr: "X_L = 2π·f·L",
+    vars: [["X_L","inductive reactance"],["f","frequency"],["L","inductance"]] },
+  { name: "Impedance (RLC)", cat: "AC Circuits", expr: "Z = √(R² + (X_L − X_C)²)",
+    vars: [["Z","impedance"],["R","resistance"],["X_L","inductive reactance"],["X_C","capacitive reactance"]] },
+  { name: "Resonant frequency", cat: "AC Circuits", expr: "f₀ = 1 / (2π·√(L·C))",
+    vars: [["f₀","resonant frequency"],["L","inductance"],["C","capacitance"]] },
+  { name: "Inductor energy", cat: "AC Circuits", expr: "E = ½·L·I²",
+    vars: [["E","energy"],["L","inductance"],["I","current"]] },
+
+  // ---- More Thermodynamics ----
+  { name: "First law of thermodynamics", cat: "Thermodynamics", expr: "ΔU = Q − W",
+    vars: [["ΔU","internal energy change"],["Q","heat"],["W","work"]] },
+  { name: "Thermal expansion (linear)", cat: "Thermodynamics", expr: "ΔL = α·L₀·ΔT",
+    vars: [["ΔL","length change"],["α","expansion coefficient"],["L₀","original length"],["ΔT","temperature change"]] },
+  { name: "Thermal expansion (volume)", cat: "Thermodynamics", expr: "ΔV = β·V₀·ΔT",
+    vars: [["ΔV","volume change"],["β","expansion coefficient"],["V₀","original volume"],["ΔT","temperature change"]] },
+  { name: "Heat conduction", cat: "Thermodynamics", expr: "Q/t = k·A·ΔT / L",
+    vars: [["Q","heat"],["t","time"],["k","thermal conductivity"],["A","area"],["ΔT","temperature difference"],["L","thickness"]] },
+  { name: "Carnot efficiency", cat: "Thermodynamics", expr: "η = 1 − T_c / T_h",
+    vars: [["η","efficiency"],["T_c","cold temperature"],["T_h","hot temperature"]] },
+  { name: "Entropy change", cat: "Thermodynamics", expr: "ΔS = Q / T",
+    vars: [["ΔS","entropy change"],["Q","heat"],["T","temperature"]] },
+  { name: "Average KE of gas", cat: "Thermodynamics", expr: "KE = (3/2)·k_B·T",
+    vars: [["KE","kinetic energy"],["k_B","Boltzmann constant"],["T","temperature"]] },
+  { name: "RMS molecular speed", cat: "Thermodynamics", expr: "v_rms = √(3·k_B·T / m)",
+    vars: [["v_rms","RMS speed"],["k_B","Boltzmann constant"],["T","temperature"],["m","mass"]] },
+  { name: "Work in isobaric process", cat: "Thermodynamics", expr: "W = P·ΔV",
+    vars: [["W","work"],["P","pressure"],["ΔV","volume change"]] },
+  { name: "Stefan–Boltzmann law", cat: "Thermodynamics", expr: "P = σ·A·e·T⁴",
+    vars: [["P","power"],["σ","Stefan-Boltzmann constant"],["A","area"],["e","emissivity"],["T","temperature"]] },
+  { name: "Wien's displacement law", cat: "Thermodynamics", expr: "λ_max = b / T",
+    vars: [["λ_max","peak wavelength"],["b","Wien constant"],["T","temperature"]] },
+
+  // ---- More Modern Physics ----
+  { name: "Relativistic momentum", cat: "Modern", expr: "p = γ·m·v",
+    vars: [["p","momentum"],["γ","Lorentz factor"],["m","mass"],["v","velocity"]] },
+  { name: "Lorentz factor", cat: "Modern", expr: "γ = 1 / √(1 − v²/c²)",
+    vars: [["γ","Lorentz factor"],["v","velocity"],["c","speed of light"]] },
+  { name: "Time dilation", cat: "Modern", expr: "Δt = γ·Δt₀",
+    vars: [["Δt","dilated time"],["γ","Lorentz factor"],["Δt₀","proper time"]] },
+  { name: "Length contraction", cat: "Modern", expr: "L = L₀ / γ",
+    vars: [["L","contracted length"],["L₀","proper length"],["γ","Lorentz factor"]] },
+  { name: "Relativistic energy", cat: "Modern", expr: "E = γ·m·c²",
+    vars: [["E","total energy"],["γ","Lorentz factor"],["m","mass"],["c","speed of light"]] },
+  { name: "Energy–momentum relation", cat: "Modern", expr: "E² = (p·c)² + (m·c²)²",
+    vars: [["E","energy"],["p","momentum"],["c","speed of light"],["m","mass"]] },
+  { name: "Heisenberg uncertainty", cat: "Modern", expr: "Δx·Δp ≥ ħ / 2",
+    vars: [["Δx","position uncertainty"],["Δp","momentum uncertainty"],["ħ","reduced Planck constant"]] },
+  { name: "Bohr radius / energy", cat: "Modern", expr: "E_n = −13.6 eV / n²",
+    vars: [["E_n","energy level"],["n","quantum number"]] },
+  { name: "Rydberg formula", cat: "Modern", expr: "1/λ = R·(1/n₁² − 1/n₂²)",
+    vars: [["λ","wavelength"],["R","Rydberg constant"],["n₁","quantum number"],["n₂","quantum number"]] },
+  { name: "Compton wavelength shift", cat: "Modern", expr: "Δλ = (h/m_e·c)·(1 − cosθ)",
+    vars: [["Δλ","wavelength shift"],["h","Planck constant"],["m_e","electron mass"],["c","speed of light"],["θ","scattering angle"]] },
+
+  // ---- Nuclear & Radioactivity ----
+  { name: "Radioactive decay", cat: "Nuclear", expr: "N = N₀·e^(−λ·t)",
+    vars: [["N","number remaining"],["N₀","initial number"],["λ","decay constant"],["t","time"]] },
+  { name: "Half-life", cat: "Nuclear", expr: "t½ = ln2 / λ",
+    vars: [["t½","half-life"],["λ","decay constant"]] },
+  { name: "Activity", cat: "Nuclear", expr: "A = λ·N",
+    vars: [["A","activity"],["λ","decay constant"],["N","number of nuclei"]] },
+  { name: "Mass defect energy", cat: "Nuclear", expr: "E = Δm·c²",
+    vars: [["E","binding energy"],["Δm","mass defect"],["c","speed of light"]] },
+  { name: "Binding energy per nucleon", cat: "Nuclear", expr: "BE/A = (Δm·c²) / A",
+    vars: [["BE","binding energy"],["Δm","mass defect"],["c","speed of light"],["A","mass number"]] },
+
+  // ---- Astrophysics ----
+  { name: "Schwarzschild radius", cat: "Astrophysics", expr: "r_s = 2·G·M / c²",
+    vars: [["r_s","Schwarzschild radius"],["G","gravitational constant"],["M","mass"],["c","speed of light"]] },
+  { name: "Hubble's law", cat: "Astrophysics", expr: "v = H₀·d",
+    vars: [["v","recession velocity"],["H₀","Hubble constant"],["d","distance"]] },
+  { name: "Luminosity (inverse square)", cat: "Astrophysics", expr: "b = L / (4π·d²)",
+    vars: [["b","brightness"],["L","luminosity"],["d","distance"]] },
+  { name: "Stellar luminosity", cat: "Astrophysics", expr: "L = 4π·R²·σ·T⁴",
+    vars: [["L","luminosity"],["R","radius"],["σ","Stefan-Boltzmann constant"],["T","temperature"]] },
+];
+
+// ===== SI units, keyed by full variable name (lowercased) =====
+const UNIT_MAP = {
+  "velocity":"m/s","final velocity":"m/s","initial velocity":"m/s","change in velocity":"m/s",
+  "average speed":"m/s","relative velocity":"m/s","terminal velocity":"m/s","exhaust velocity":"m/s",
+  "orbital velocity":"m/s","escape velocity":"m/s","maximum velocity":"m/s","drift velocity":"m/s",
+  "tangential velocity":"m/s","wave velocity":"m/s","observer velocity":"m/s","source velocity":"m/s",
+  "recession velocity":"m/s","rms speed":"m/s",
+  "displacement":"m","distance":"m","height":"m","depth":"m","range":"m","position":"m",
+  "initial position":"m","maximum height":"m","radius":"m","orbital radius":"m","length":"m",
+  "wavelength":"m","amplitude":"m","center of mass":"m","focal length":"m","object distance":"m",
+  "image distance":"m","image height":"m","object height":"m","slit separation":"m","grating spacing":"m",
+  "separation":"m","thickness":"m","original length":"m","length change":"m","peak wavelength":"m",
+  "contracted length":"m","proper length":"m","position uncertainty":"m","wavelength shift":"m",
+  "schwarzschild radius":"m",
+  "time":"s","time of flight":"s","period":"s","half-life":"s","dilated time":"s","proper time":"s",
+  "acceleration":"m/s²","gravitational acceleration":"m/s²","tangential acceleration":"m/s²",
+  "jerk":"m/s³",
+  "force":"N","weight":"N","friction force":"N","normal force":"N","tension":"N","drag force":"N",
+  "static friction":"N","buoyant force":"N",
+  "mass":"kg","initial mass":"kg","final mass":"kg","electron mass":"kg","mass defect":"kg",
+  "spring constant":"N/m",
+  "momentum":"kg·m/s","change in momentum":"kg·m/s","momentum uncertainty":"kg·m/s",
+  "angular momentum":"kg·m²/s","change in angular momentum":"kg·m²/s",
+  "moment of inertia":"kg·m²",
+  "angular velocity":"rad/s","angular frequency":"rad/s","initial angular velocity":"rad/s",
+  "change in angular velocity":"rad/s","resonant frequency":"Hz",
+  "angular acceleration":"rad/s²",
+  "angle":"rad","angular displacement":"rad","angle of incidence":"rad","angle of refraction":"rad",
+  "critical angle":"rad","scattering angle":"rad",
+  "work":"J","kinetic energy":"J","potential energy":"J","energy":"J","heat energy":"J","heat":"J",
+  "mechanical energy":"J","total energy":"J","useful energy":"J","input energy":"J","energy change":"J",
+  "change in kinetic energy":"J","internal energy change":"J","binding energy":"J","work function":"J",
+  "energy level":"eV","latent heat":"J/kg","specific heat capacity":"J/(kg·K)",
+  "power":"W","average power":"W","intensity":"W/m²","reference intensity":"W/m²","brightness":"W/m²",
+  "luminosity":"W",
+  "efficiency":"","coefficient of friction":"","coefficient of static friction":"","drag coefficient":"",
+  "coefficient of restitution":"","refractive index":"","magnification":"","order":"","harmonic number":"",
+  "reynolds number":"","number of turns":"","secondary turns":"","primary turns":"","lorentz factor":"",
+  "emissivity":"","quantum number":"","mass number":"","number remaining":"","initial number":"",
+  "number of nuclei":"",
+  "torque":"N·m",
+  "frequency":"Hz","observed frequency":"Hz","source frequency":"Hz","harmonic frequency":"Hz","beat frequency":"Hz",
+  "voltage":"V","secondary voltage":"V","primary voltage":"V","rms voltage":"V","peak voltage":"V",
+  "electric potential":"V","emf":"V",
+  "current":"A","rms current":"A","peak current":"A",
+  "resistance":"Ω","equivalent resistance":"Ω","capacitive reactance":"Ω","inductive reactance":"Ω","impedance":"Ω",
+  "resistivity":"Ω·m",
+  "charge":"C",
+  "capacitance":"F","equivalent capacitance":"F","permittivity":"F/m",
+  "inductance":"H",
+  "area":"m²","volume":"m³","original volume":"m³","volume change":"m³","flow rate":"m³/s",
+  "magnetic field":"T","magnetic flux":"Wb",
+  "pressure":"Pa","viscosity":"Pa·s",
+  "moles":"mol","gas constant":"J/(mol·K)","density":"kg/m³","linear density":"kg/m","charge density":"1/m³",
+  "temperature":"K","temperature change":"K","temperature difference":"K","cold temperature":"K","hot temperature":"K",
+  "expansion coefficient":"1/K","thermal conductivity":"W/(m·K)","entropy change":"J/K",
+  "speed of light":"m/s","planck constant":"J·s","reduced planck constant":"J·s",
+  "gravitational constant":"N·m²/kg²","coulomb constant":"N·m²/C²","boltzmann constant":"J/K",
+  "stefan-boltzmann constant":"W/(m²·K⁴)","wien constant":"m·K","rydberg constant":"1/m",
+  "gravitational field strength":"N/kg","gravitational potential":"J/kg","electric field":"V/m",
+  "permeability":"H/m","turns per length":"1/m","decay constant":"1/s","activity":"Bq",
+  "sound level":"dB","wave number":"rad/m","hubble constant":"1/s","total energy ":"J"
+};
+function unitFor(name){ const u = UNIT_MAP[name.toLowerCase()]; return u === undefined ? "" : u; }
+
+// ===== Unit conversion: keyed by SI unit. factor = value × factor → SI. =====
+const CONV = {
+  "m":      [["m",1],["cm",0.01],["mm",0.001],["μm",1e-6],["nm",1e-9],["km",1000],["in",0.0254],["ft",0.3048],["mi",1609.344],["ly",9.461e15],["AU",1.496e11]],
+  "m/s":    [["m/s",1],["km/h",1/3.6],["mph",0.44704],["ft/s",0.3048],["knot",0.514444]],
+  "m/s²":   [["m/s²",1],["g",9.80665],["ft/s²",0.3048]],
+  "kg":     [["kg",1],["g",0.001],["mg",1e-6],["t",1000],["lb",0.453592],["oz",0.0283495]],
+  "s":      [["s",1],["ms",0.001],["μs",1e-6],["ns",1e-9],["min",60],["h",3600],["day",86400],["yr",3.15576e7]],
+  "N":      [["N",1],["kN",1000],["mN",0.001],["dyn",1e-5],["lbf",4.448222]],
+  "J":      [["J",1],["kJ",1000],["MJ",1e6],["mJ",0.001],["cal",4.184],["kcal",4184],["eV",1.602177e-19],["Wh",3600],["kWh",3.6e6]],
+  "W":      [["W",1],["kW",1000],["MW",1e6],["mW",0.001],["hp",745.7]],
+  "Pa":     [["Pa",1],["kPa",1000],["MPa",1e6],["bar",1e5],["atm",101325],["psi",6894.757],["mmHg",133.322],["torr",133.322]],
+  "Hz":     [["Hz",1],["kHz",1000],["MHz",1e6],["GHz",1e9]],
+  "V":      [["V",1],["mV",0.001],["μV",1e-6],["kV",1000],["MV",1e6]],
+  "A":      [["A",1],["mA",0.001],["μA",1e-6],["kA",1000]],
+  "Ω":      [["Ω",1],["mΩ",0.001],["kΩ",1000],["MΩ",1e6]],
+  "C":      [["C",1],["mC",0.001],["μC",1e-6],["nC",1e-9],["pC",1e-12]],
+  "F":      [["F",1],["mF",0.001],["μF",1e-6],["nF",1e-9],["pF",1e-12]],
+  "H":      [["H",1],["mH",0.001],["μH",1e-6]],
+  "T":      [["T",1],["mT",0.001],["μT",1e-6],["G",1e-4]],
+  "Wb":     [["Wb",1],["mWb",0.001]],
+  "m²":     [["m²",1],["cm²",1e-4],["mm²",1e-6],["km²",1e6],["ha",1e4]],
+  "m³":     [["m³",1],["L",0.001],["mL",1e-6],["cm³",1e-6],["gal",0.00378541]],
+  "m³/s":   [["m³/s",1],["L/s",0.001],["L/min",1.66667e-5]],
+  "rad":    [["rad",1],["deg",Math.PI/180]],
+  "rad/s":  [["rad/s",1],["deg/s",Math.PI/180],["rpm",2*Math.PI/60]],
+  "mol":    [["mol",1],["mmol",0.001],["μmol",1e-6]],
+  "kg/m³":  [["kg/m³",1],["g/cm³",1000],["g/mL",1000],["g/L",1]],
+  "Pa·s":   [["Pa·s",1],["cP",0.001],["P",0.1]],
+  "kg·m/s": [["kg·m/s",1],["g·m/s",0.001]]
+};
+
+// ===== Solvers, keyed by formula name. Each gives functions to solve for a symbol. =====
+// consts: values pre-filled into the calculator (editable).
+const C = { c:2.998e8, G:6.674e-11, h:6.626e-34, kB:1.381e-23, kC:8.988e9, Rg:8.314,
+  g:9.81, eps0:8.854e-12, mu0:1.256637e-6, sigma:5.670e-8, bWien:2.898e-3, hbar:1.055e-34, me:9.109e-31, Rryd:1.097e7 };
+const SOLVERS = {
+  "Average velocity": { solve:{ "v":o=>o["Δx"]/o["Δt"], "Δx":o=>o["v"]*o["Δt"], "Δt":o=>o["Δx"]/o["v"] } },
+  "Average acceleration": { solve:{ "a":o=>o["Δv"]/o["Δt"], "Δv":o=>o["a"]*o["Δt"], "Δt":o=>o["Δv"]/o["a"] } },
+  "Velocity (constant a)": { solve:{ "v":o=>o["u"]+o["a"]*o["t"], "u":o=>o["v"]-o["a"]*o["t"], "a":o=>(o["v"]-o["u"])/o["t"], "t":o=>(o["v"]-o["u"])/o["a"] } },
+  "Velocity² (suvat)": { solve:{ "v":o=>Math.sqrt(o["u"]**2+2*o["a"]*o["s"]), "u":o=>Math.sqrt(o["v"]**2-2*o["a"]*o["s"]), "a":o=>(o["v"]**2-o["u"]**2)/(2*o["s"]), "s":o=>(o["v"]**2-o["u"]**2)/(2*o["a"]) } },
+  "Displacement (avg velocity)": { solve:{ "s":o=>0.5*(o["u"]+o["v"])*o["t"], "t":o=>2*o["s"]/(o["u"]+o["v"]), "u":o=>2*o["s"]/o["t"]-o["v"], "v":o=>2*o["s"]/o["t"]-o["u"] } },
+  "Free fall velocity": { consts:{g:9.81}, solve:{ "v":o=>o["g"]*o["t"], "g":o=>o["v"]/o["t"], "t":o=>o["v"]/o["g"] } },
+  "Free fall distance": { consts:{g:9.81}, solve:{ "h":o=>0.5*o["g"]*o["t"]**2, "g":o=>2*o["h"]/o["t"]**2, "t":o=>Math.sqrt(2*o["h"]/o["g"]) } },
+
+  "Newton's second law": { solve:{ "F":o=>o["m"]*o["a"], "m":o=>o["F"]/o["a"], "a":o=>o["F"]/o["m"] } },
+  "Weight": { consts:{g:9.81}, solve:{ "W":o=>o["m"]*o["g"], "m":o=>o["W"]/o["g"], "g":o=>o["W"]/o["m"] } },
+  "Friction force": { solve:{ "f":o=>o["μ"]*o["N"], "μ":o=>o["f"]/o["N"], "N":o=>o["f"]/o["μ"] } },
+  "Hooke's law": { solve:{ "F":o=>o["k"]*o["x"], "k":o=>o["F"]/o["x"], "x":o=>o["F"]/o["k"] } },
+  "Centripetal force": { solve:{ "F":o=>o["m"]*o["v"]**2/o["r"], "m":o=>o["F"]*o["r"]/o["v"]**2, "v":o=>Math.sqrt(o["F"]*o["r"]/o["m"]), "r":o=>o["m"]*o["v"]**2/o["F"] } },
+  "Centripetal acceleration": { solve:{ "a":o=>o["v"]**2/o["r"], "v":o=>Math.sqrt(o["a"]*o["r"]), "r":o=>o["v"]**2/o["a"] } },
+
+  "Linear momentum": { solve:{ "p":o=>o["m"]*o["v"], "m":o=>o["p"]/o["v"], "v":o=>o["p"]/o["m"] } },
+  "Angular momentum": { solve:{ "L":o=>o["I"]*o["ω"], "I":o=>o["L"]/o["ω"], "ω":o=>o["L"]/o["I"] } },
+
+  "Kinetic energy": { solve:{ "KE":o=>0.5*o["m"]*o["v"]**2, "m":o=>2*o["KE"]/o["v"]**2, "v":o=>Math.sqrt(2*o["KE"]/o["m"]) } },
+  "Gravitational PE": { consts:{g:9.81}, solve:{ "PE":o=>o["m"]*o["g"]*o["h"], "m":o=>o["PE"]/(o["g"]*o["h"]), "g":o=>o["PE"]/(o["m"]*o["h"]), "h":o=>o["PE"]/(o["m"]*o["g"]) } },
+  "Elastic PE": { solve:{ "PE":o=>0.5*o["k"]*o["x"]**2, "k":o=>2*o["PE"]/o["x"]**2, "x":o=>Math.sqrt(2*o["PE"]/o["k"]) } },
+  "Power": { solve:{ "P":o=>o["W"]/o["t"], "W":o=>o["P"]*o["t"], "t":o=>o["W"]/o["P"] } },
+  "Power (force·velocity)": { solve:{ "P":o=>o["F"]*o["v"], "F":o=>o["P"]/o["v"], "v":o=>o["P"]/o["F"] } },
+
+  "Torque": { solve:{ "τ":o=>o["r"]*o["F"]*Math.sin(o["θ"]), "r":o=>o["τ"]/(o["F"]*Math.sin(o["θ"])), "F":o=>o["τ"]/(o["r"]*Math.sin(o["θ"])) } },
+  "Rotational Newton's 2nd law": { solve:{ "τ":o=>o["I"]*o["α"], "I":o=>o["τ"]/o["α"], "α":o=>o["τ"]/o["I"] } },
+  "Tangential velocity": { solve:{ "v":o=>o["r"]*o["ω"], "r":o=>o["v"]/o["ω"], "ω":o=>o["v"]/o["r"] } },
+
+  "Newton's gravitation": { consts:{G:C.G}, solve:{ "F":o=>o["G"]*o["m₁"]*o["m₂"]/o["r"]**2, "r":o=>Math.sqrt(o["G"]*o["m₁"]*o["m₂"]/o["F"]), "m₁":o=>o["F"]*o["r"]**2/(o["G"]*o["m₂"]), "m₂":o=>o["F"]*o["r"]**2/(o["G"]*o["m₁"]) } },
+  "Orbital velocity": { consts:{G:C.G}, solve:{ "v":o=>Math.sqrt(o["G"]*o["M"]/o["r"]), "M":o=>o["v"]**2*o["r"]/o["G"], "r":o=>o["G"]*o["M"]/o["v"]**2 } },
+  "Escape velocity": { consts:{G:C.G}, solve:{ "v_e":o=>Math.sqrt(2*o["G"]*o["M"]/o["r"]), "M":o=>o["v_e"]**2*o["r"]/(2*o["G"]), "r":o=>2*o["G"]*o["M"]/o["v_e"]**2 } },
+
+  "Wave speed": { solve:{ "v":o=>o["f"]*o["λ"], "f":o=>o["v"]/o["λ"], "λ":o=>o["v"]/o["f"] } },
+  "Period & frequency": { solve:{ "T":o=>1/o["f"], "f":o=>1/o["T"] } },
+  "Angular frequency": { solve:{ "ω":o=>2*Math.PI*o["f"], "f":o=>o["ω"]/(2*Math.PI) } },
+  "Pendulum period": { consts:{g:9.81}, solve:{ "T":o=>2*Math.PI*Math.sqrt(o["L"]/o["g"]), "L":o=>o["g"]*(o["T"]/(2*Math.PI))**2, "g":o=>o["L"]/(o["T"]/(2*Math.PI))**2 } },
+  "Mass-spring period": { solve:{ "T":o=>2*Math.PI*Math.sqrt(o["m"]/o["k"]), "m":o=>o["k"]*(o["T"]/(2*Math.PI))**2, "k":o=>o["m"]/(o["T"]/(2*Math.PI))**2 } },
+
+  "Snell's law": { solve:{ "θ₂":o=>Math.asin(o["n₁"]*Math.sin(o["θ₁"])/o["n₂"]), "θ₁":o=>Math.asin(o["n₂"]*Math.sin(o["θ₂"])/o["n₁"]), "n₁":o=>o["n₂"]*Math.sin(o["θ₂"])/Math.sin(o["θ₁"]), "n₂":o=>o["n₁"]*Math.sin(o["θ₁"])/Math.sin(o["θ₂"]) } },
+  "Index of refraction": { consts:{c:C.c}, solve:{ "n":o=>o["c"]/o["v"], "v":o=>o["c"]/o["n"] } },
+  "Thin lens equation": { solve:{ "f":o=>1/(1/o["d_o"]+1/o["d_i"]), "d_o":o=>1/(1/o["f"]-1/o["d_i"]), "d_i":o=>1/(1/o["f"]-1/o["d_o"]) } },
+
+  "Ohm's law": { solve:{ "V":o=>o["I"]*o["R"], "I":o=>o["V"]/o["R"], "R":o=>o["V"]/o["I"] } },
+  "Electrical power": { solve:{ "P":o=>o["V"]*o["I"], "V":o=>o["P"]/o["I"], "I":o=>o["P"]/o["V"] } },
+  "Electrical energy": { solve:{ "E":o=>o["V"]*o["I"]*o["t"], "V":o=>o["E"]/(o["I"]*o["t"]), "I":o=>o["E"]/(o["V"]*o["t"]), "t":o=>o["E"]/(o["V"]*o["I"]) } },
+  "Charge": { solve:{ "Q":o=>o["I"]*o["t"], "I":o=>o["Q"]/o["t"], "t":o=>o["Q"]/o["I"] } },
+  "Coulomb's law": { consts:{k:C.kC}, solve:{ "F":o=>o["k"]*o["q₁"]*o["q₂"]/o["r"]**2, "r":o=>Math.sqrt(o["k"]*o["q₁"]*o["q₂"]/o["F"]), "q₁":o=>o["F"]*o["r"]**2/(o["k"]*o["q₂"]), "q₂":o=>o["F"]*o["r"]**2/(o["k"]*o["q₁"]) } },
+  "Capacitance": { solve:{ "C":o=>o["Q"]/o["V"], "Q":o=>o["C"]*o["V"], "V":o=>o["Q"]/o["C"] } },
+  "Capacitor energy": { solve:{ "E":o=>0.5*o["C"]*o["V"]**2, "C":o=>2*o["E"]/o["V"]**2, "V":o=>Math.sqrt(2*o["E"]/o["C"]) } },
+  "Power (I²R)": { solve:{ "P":o=>o["I"]**2*o["R"], "I":o=>Math.sqrt(o["P"]/o["R"]), "R":o=>o["P"]/o["I"]**2 } },
+  "Power (V²/R)": { solve:{ "P":o=>o["V"]**2/o["R"], "V":o=>Math.sqrt(o["P"]*o["R"]), "R":o=>o["V"]**2/o["P"] } },
+  "Capacitive reactance": { solve:{ "X_C":o=>1/(2*Math.PI*o["f"]*o["C"]), "f":o=>1/(2*Math.PI*o["X_C"]*o["C"]), "C":o=>1/(2*Math.PI*o["X_C"]*o["f"]) } },
+  "Inductive reactance": { solve:{ "X_L":o=>2*Math.PI*o["f"]*o["L"], "f":o=>o["X_L"]/(2*Math.PI*o["L"]), "L":o=>o["X_L"]/(2*Math.PI*o["f"]) } },
+  "Resonant frequency": { solve:{ "f₀":o=>1/(2*Math.PI*Math.sqrt(o["L"]*o["C"])), "L":o=>1/((2*Math.PI*o["f₀"])**2*o["C"]), "C":o=>1/((2*Math.PI*o["f₀"])**2*o["L"]) } },
+
+  "Heat energy": { solve:{ "Q":o=>o["m"]*o["c"]*o["ΔT"], "m":o=>o["Q"]/(o["c"]*o["ΔT"]), "c":o=>o["Q"]/(o["m"]*o["ΔT"]), "ΔT":o=>o["Q"]/(o["m"]*o["c"]) } },
+  "Latent heat": { solve:{ "Q":o=>o["m"]*o["L"], "m":o=>o["Q"]/o["L"], "L":o=>o["Q"]/o["m"] } },
+  "Ideal gas law": { consts:{R:C.Rg}, solve:{ "P":o=>o["n"]*o["R"]*o["T"]/o["V"], "V":o=>o["n"]*o["R"]*o["T"]/o["P"], "n":o=>o["P"]*o["V"]/(o["R"]*o["T"]), "T":o=>o["P"]*o["V"]/(o["n"]*o["R"]) } },
+  "Pressure": { solve:{ "P":o=>o["F"]/o["A"], "F":o=>o["P"]*o["A"], "A":o=>o["F"]/o["P"] } },
+  "Density": { solve:{ "ρ":o=>o["m"]/o["V"], "m":o=>o["ρ"]*o["V"], "V":o=>o["m"]/o["ρ"] } },
+  "Pressure in fluid": { consts:{g:9.81}, solve:{ "P":o=>o["ρ"]*o["g"]*o["h"], "ρ":o=>o["P"]/(o["g"]*o["h"]), "h":o=>o["P"]/(o["ρ"]*o["g"]) } },
+
+  "Mass–energy": { consts:{c:C.c}, solve:{ "E":o=>o["m"]*o["c"]**2, "m":o=>o["E"]/o["c"]**2 } },
+  "Photon energy": { consts:{h:C.h}, solve:{ "E":o=>o["h"]*o["f"], "f":o=>o["E"]/o["h"] } },
+  "de Broglie wavelength": { consts:{h:C.h}, solve:{ "λ":o=>o["h"]/o["p"], "p":o=>o["h"]/o["λ"] } },
+  "Mass defect energy": { consts:{c:C.c}, solve:{ "E":o=>o["Δm"]*o["c"]**2, "Δm":o=>o["E"]/o["c"]**2 } },
+
+  "Half-life": { solve:{ "t½":o=>Math.LN2/o["λ"], "λ":o=>Math.LN2/o["t½"] } },
+  "Activity": { solve:{ "A":o=>o["λ"]*o["N"], "λ":o=>o["A"]/o["N"], "N":o=>o["A"]/o["λ"] } },
+  "Radioactive decay": { solve:{ "N":o=>o["N₀"]*Math.exp(-o["λ"]*o["t"]), "N₀":o=>o["N"]/Math.exp(-o["λ"]*o["t"]), "λ":o=>-Math.log(o["N"]/o["N₀"])/o["t"], "t":o=>-Math.log(o["N"]/o["N₀"])/o["λ"] } },
+
+  "Hubble's law": { solve:{ "v":o=>o["H₀"]*o["d"], "H₀":o=>o["v"]/o["d"], "d":o=>o["v"]/o["H₀"] } },
+
+  // ---- extended calculators ----
+  "Displacement (suvat)": { solve:{ "s":o=>o["u"]*o["t"]+0.5*o["a"]*o["t"]**2, "u":o=>(o["s"]-0.5*o["a"]*o["t"]**2)/o["t"], "a":o=>2*(o["s"]-o["u"]*o["t"])/o["t"]**2 } },
+  "Position (general)": { solve:{ "x":o=>o["x₀"]+o["v₀"]*o["t"]+0.5*o["a"]*o["t"]**2, "x₀":o=>o["x"]-o["v₀"]*o["t"]-0.5*o["a"]*o["t"]**2, "v₀":o=>(o["x"]-o["x₀"]-0.5*o["a"]*o["t"]**2)/o["t"], "a":o=>2*(o["x"]-o["x₀"]-o["v₀"]*o["t"])/o["t"]**2 } },
+  "Average speed": { solve:{ "v̄":o=>o["d"]/o["t"], "d":o=>o["v̄"]*o["t"], "t":o=>o["d"]/o["v̄"] } },
+  "Relative velocity": { solve:{ "v_AB":o=>o["v_A"]-o["v_B"], "v_A":o=>o["v_AB"]+o["v_B"], "v_B":o=>o["v_A"]-o["v_AB"] } },
+  "Projectile range": { consts:{g:9.81}, solve:{ "R":o=>o["v"]**2*Math.sin(2*o["θ"])/o["g"], "v":o=>Math.sqrt(o["R"]*o["g"]/Math.sin(2*o["θ"])), "g":o=>o["v"]**2*Math.sin(2*o["θ"])/o["R"] } },
+  "Projectile time of flight": { consts:{g:9.81}, solve:{ "t":o=>2*o["v"]*Math.sin(o["θ"])/o["g"], "v":o=>o["t"]*o["g"]/(2*Math.sin(o["θ"])), "g":o=>2*o["v"]*Math.sin(o["θ"])/o["t"] } },
+  "Projectile max height": { consts:{g:9.81}, solve:{ "H":o=>o["v"]**2*Math.sin(o["θ"])**2/(2*o["g"]), "v":o=>Math.sqrt(2*o["g"]*o["H"])/Math.sin(o["θ"]), "g":o=>o["v"]**2*Math.sin(o["θ"])**2/(2*o["H"]) } },
+
+  "Tension (Atwood)": { consts:{g:9.81}, solve:{ "T":o=>2*o["m₁"]*o["m₂"]*o["g"]/(o["m₁"]+o["m₂"]), "m₁":o=>o["T"]*o["m₂"]/(2*o["m₂"]*o["g"]-o["T"]), "m₂":o=>o["T"]*o["m₁"]/(2*o["m₁"]*o["g"]-o["T"]), "g":o=>o["T"]*(o["m₁"]+o["m₂"])/(2*o["m₁"]*o["m₂"]) } },
+  "Inclined plane (parallel)": { consts:{g:9.81}, solve:{ "F":o=>o["m"]*o["g"]*Math.sin(o["θ"]), "m":o=>o["F"]/(o["g"]*Math.sin(o["θ"])), "g":o=>o["F"]/(o["m"]*Math.sin(o["θ"])), "θ":o=>Math.asin(o["F"]/(o["m"]*o["g"])) } },
+  "Inclined plane (normal)": { consts:{g:9.81}, solve:{ "N":o=>o["m"]*o["g"]*Math.cos(o["θ"]), "m":o=>o["N"]/(o["g"]*Math.cos(o["θ"])), "g":o=>o["N"]/(o["m"]*Math.cos(o["θ"])), "θ":o=>Math.acos(o["N"]/(o["m"]*o["g"])) } },
+  "Static friction (max)": { solve:{ "f_s":o=>o["μ_s"]*o["N"], "μ_s":o=>o["f_s"]/o["N"], "N":o=>o["f_s"]/o["μ_s"] } },
+  "Drag force": { solve:{ "F_d":o=>0.5*o["ρ"]*o["v"]**2*o["C_d"]*o["A"], "ρ":o=>2*o["F_d"]/(o["v"]**2*o["C_d"]*o["A"]), "v":o=>Math.sqrt(2*o["F_d"]/(o["ρ"]*o["C_d"]*o["A"])), "C_d":o=>2*o["F_d"]/(o["ρ"]*o["v"]**2*o["A"]), "A":o=>2*o["F_d"]/(o["ρ"]*o["v"]**2*o["C_d"]) } },
+  "Terminal velocity": { consts:{g:9.81}, solve:{ "v_t":o=>Math.sqrt(2*o["m"]*o["g"]/(o["ρ"]*o["A"]*o["C_d"])), "m":o=>o["v_t"]**2*o["ρ"]*o["A"]*o["C_d"]/(2*o["g"]) } },
+  "Spring force constant": { solve:{ "k":o=>o["F"]/o["x"], "F":o=>o["k"]*o["x"], "x":o=>o["F"]/o["k"] } },
+  "Banked curve angle": { consts:{g:9.81}, solve:{ "θ":o=>Math.atan(o["v"]**2/(o["r"]*o["g"])), "v":o=>Math.sqrt(o["r"]*o["g"]*Math.tan(o["θ"])), "r":o=>o["v"]**2/(o["g"]*Math.tan(o["θ"])), "g":o=>o["v"]**2/(o["r"]*Math.tan(o["θ"])) } },
+
+  "Conservation of momentum": { solve:{ "v₁":o=>(o["m₁"]*o["u₁"]+o["m₂"]*o["u₂"]-o["m₂"]*o["v₂"])/o["m₁"], "v₂":o=>(o["m₁"]*o["u₁"]+o["m₂"]*o["u₂"]-o["m₁"]*o["v₁"])/o["m₂"], "u₁":o=>(o["m₁"]*o["v₁"]+o["m₂"]*o["v₂"]-o["m₂"]*o["u₂"])/o["m₁"], "u₂":o=>(o["m₁"]*o["v₁"]+o["m₂"]*o["v₂"]-o["m₁"]*o["u₁"])/o["m₂"], "m₁":o=>o["m₂"]*(o["v₂"]-o["u₂"])/(o["u₁"]-o["v₁"]), "m₂":o=>o["m₁"]*(o["u₁"]-o["v₁"])/(o["v₂"]-o["u₂"]) } },
+  "Elastic collision (1D)": { solve:{ "v₁":o=>((o["m₁"]-o["m₂"])*o["u₁"]+2*o["m₂"]*o["u₂"])/(o["m₁"]+o["m₂"]) } },
+  "Coefficient of restitution": { solve:{ "e":o=>(o["v₂"]-o["v₁"])/(o["u₁"]-o["u₂"]), "v₂":o=>o["e"]*(o["u₁"]-o["u₂"])+o["v₁"], "v₁":o=>o["v₂"]-o["e"]*(o["u₁"]-o["u₂"]), "u₁":o=>(o["v₂"]-o["v₁"])/o["e"]+o["u₂"], "u₂":o=>o["u₁"]-(o["v₂"]-o["v₁"])/o["e"] } },
+  "Rocket equation": { solve:{ "Δv":o=>o["v_e"]*Math.log(o["m₀"]/o["m_f"]), "v_e":o=>o["Δv"]/Math.log(o["m₀"]/o["m_f"]), "m₀":o=>o["m_f"]*Math.exp(o["Δv"]/o["v_e"]), "m_f":o=>o["m₀"]/Math.exp(o["Δv"]/o["v_e"]) } },
+  "Angular impulse": { solve:{ "ΔL":o=>o["τ"]*o["Δt"], "τ":o=>o["ΔL"]/o["Δt"], "Δt":o=>o["ΔL"]/o["τ"] } },
+  "Impulse": { solve:{ "J":o=>o["F"]*o["Δt"], "F":o=>o["J"]/o["Δt"], "Δt":o=>o["J"]/o["F"], "Δp":o=>o["F"]*o["Δt"] } },
+
+  "Angular velocity": { solve:{ "ω":o=>o["θ"]/o["t"], "θ":o=>o["ω"]*o["t"], "t":o=>o["θ"]/o["ω"] } },
+  "Angular acceleration": { solve:{ "α":o=>o["Δω"]/o["Δt"], "Δω":o=>o["α"]*o["Δt"], "Δt":o=>o["Δω"]/o["α"] } },
+  "Rotational KE": { solve:{ "KE":o=>0.5*o["I"]*o["ω"]**2, "I":o=>2*o["KE"]/o["ω"]**2, "ω":o=>Math.sqrt(2*o["KE"]/o["I"]) } },
+  "Moment of inertia (point)": { solve:{ "I":o=>o["m"]*o["r"]**2, "m":o=>o["I"]/o["r"]**2, "r":o=>Math.sqrt(o["I"]/o["m"]) } },
+  "Moment of inertia (disk)": { solve:{ "I":o=>0.5*o["m"]*o["r"]**2, "m":o=>2*o["I"]/o["r"]**2, "r":o=>Math.sqrt(2*o["I"]/o["m"]) } },
+  "Moment of inertia (rod, center)": { solve:{ "I":o=>o["m"]*o["L"]**2/12, "m":o=>12*o["I"]/o["L"]**2, "L":o=>Math.sqrt(12*o["I"]/o["m"]) } },
+  "Tangential acceleration": { solve:{ "a_t":o=>o["r"]*o["α"], "r":o=>o["a_t"]/o["α"], "α":o=>o["a_t"]/o["r"] } },
+  "Angular displacement": { solve:{ "θ":o=>o["ω₀"]*o["t"]+0.5*o["α"]*o["t"]**2, "ω₀":o=>(o["θ"]-0.5*o["α"]*o["t"]**2)/o["t"], "α":o=>2*(o["θ"]-o["ω₀"]*o["t"])/o["t"]**2 } },
+  "Rolling kinetic energy": { solve:{ "KE":o=>0.5*o["m"]*o["v"]**2+0.5*o["I"]*o["ω"]**2 } },
+
+  "Gravitational field": { consts:{G:C.G}, solve:{ "g":o=>o["G"]*o["M"]/o["r"]**2, "M":o=>o["g"]*o["r"]**2/o["G"], "r":o=>Math.sqrt(o["G"]*o["M"]/o["g"]) } },
+  "Gravitational PE (general)": { consts:{G:C.G}, solve:{ "U":o=>-o["G"]*o["m₁"]*o["m₂"]/o["r"], "r":o=>-o["G"]*o["m₁"]*o["m₂"]/o["U"], "m₁":o=>-o["U"]*o["r"]/(o["G"]*o["m₂"]), "m₂":o=>-o["U"]*o["r"]/(o["G"]*o["m₁"]) } },
+  "Kepler's third law": { consts:{G:C.G}, solve:{ "T":o=>2*Math.PI*Math.sqrt(o["r"]**3/(o["G"]*o["M"])), "M":o=>4*Math.PI**2*o["r"]**3/(o["G"]*o["T"]**2), "r":o=>Math.cbrt(o["G"]*o["M"]*o["T"]**2/(4*Math.PI**2)) } },
+  "Orbital period": { consts:{G:C.G}, solve:{ "T":o=>2*Math.PI*Math.sqrt(o["r"]**3/(o["G"]*o["M"])), "r":o=>Math.cbrt(o["G"]*o["M"]*(o["T"]/(2*Math.PI))**2), "M":o=>o["r"]**3/(o["G"]*(o["T"]/(2*Math.PI))**2) } },
+  "Gravitational potential": { consts:{G:C.G}, solve:{ "V":o=>-o["G"]*o["M"]/o["r"], "M":o=>-o["V"]*o["r"]/o["G"], "r":o=>-o["G"]*o["M"]/o["V"] } },
+  "Gravitational PE (orbital)": { consts:{G:C.G}, solve:{ "E":o=>-o["G"]*o["M"]*o["m"]/(2*o["r"]), "r":o=>-o["G"]*o["M"]*o["m"]/(2*o["E"]), "M":o=>-2*o["E"]*o["r"]/(o["G"]*o["m"]), "m":o=>-2*o["E"]*o["r"]/(o["G"]*o["M"]) } },
+
+  "SHM acceleration": { solve:{ "a":o=>-(o["ω"]**2)*o["x"], "ω":o=>Math.sqrt(-o["a"]/o["x"]), "x":o=>-o["a"]/o["ω"]**2 } },
+  "SHM max velocity": { solve:{ "v_max":o=>o["A"]*o["ω"], "A":o=>o["v_max"]/o["ω"], "ω":o=>o["v_max"]/o["A"] } },
+  "Wave equation (number)": { solve:{ "k":o=>2*Math.PI/o["λ"], "λ":o=>2*Math.PI/o["k"] } },
+  "Standing wave frequency": { solve:{ "f_n":o=>o["n"]*o["v"]/(2*o["L"]), "n":o=>2*o["f_n"]*o["L"]/o["v"], "v":o=>2*o["f_n"]*o["L"]/o["n"], "L":o=>o["n"]*o["v"]/(2*o["f_n"]) } },
+  "Speed of wave on string": { solve:{ "v":o=>Math.sqrt(o["T"]/o["μ"]), "T":o=>o["v"]**2*o["μ"], "μ":o=>o["T"]/o["v"]**2 } },
+  "Intensity": { solve:{ "I":o=>o["P"]/o["A"], "P":o=>o["I"]*o["A"], "A":o=>o["P"]/o["I"] } },
+  "Sound intensity level": { solve:{ "β":o=>10*Math.log10(o["I"]/o["I₀"]), "I":o=>o["I₀"]*Math.pow(10,o["β"]/10), "I₀":o=>o["I"]/Math.pow(10,o["β"]/10) } },
+  "Beat frequency": { solve:{ "f_beat":o=>Math.abs(o["f₁"]-o["f₂"]) } },
+
+  "Critical angle": { solve:{ "θ_c":o=>Math.asin(o["n₂"]/o["n₁"]), "n₂":o=>o["n₁"]*Math.sin(o["θ_c"]), "n₁":o=>o["n₂"]/Math.sin(o["θ_c"]) } },
+  "Mirror equation": { solve:{ "f":o=>1/(1/o["d_o"]+1/o["d_i"]), "d_o":o=>1/(1/o["f"]-1/o["d_i"]), "d_i":o=>1/(1/o["f"]-1/o["d_o"]) } },
+  "Double slit (maxima)": { solve:{ "d":o=>o["m"]*o["λ"]/Math.sin(o["θ"]), "θ":o=>Math.asin(o["m"]*o["λ"]/o["d"]), "m":o=>o["d"]*Math.sin(o["θ"])/o["λ"], "λ":o=>o["d"]*Math.sin(o["θ"])/o["m"] } },
+  "Diffraction grating": { solve:{ "d":o=>o["n"]*o["λ"]/Math.sin(o["θ"]), "θ":o=>Math.asin(o["n"]*o["λ"]/o["d"]), "n":o=>o["d"]*Math.sin(o["θ"])/o["λ"], "λ":o=>o["d"]*Math.sin(o["θ"])/o["n"] } },
+  "Lens power": { solve:{ "P":o=>1/o["f"], "f":o=>1/o["P"] } },
+
+  "Buoyant force": { consts:{g:9.81}, solve:{ "F_b":o=>o["ρ"]*o["g"]*o["V"], "ρ":o=>o["F_b"]/(o["g"]*o["V"]), "V":o=>o["F_b"]/(o["ρ"]*o["g"]), "g":o=>o["F_b"]/(o["ρ"]*o["V"]) } },
+  "Continuity equation": { solve:{ "A₁":o=>o["A₂"]*o["v₂"]/o["v₁"], "v₁":o=>o["A₂"]*o["v₂"]/o["A₁"], "A₂":o=>o["A₁"]*o["v₁"]/o["v₂"], "v₂":o=>o["A₁"]*o["v₁"]/o["A₂"] } },
+  "Flow rate": { solve:{ "Q":o=>o["A"]*o["v"], "A":o=>o["Q"]/o["v"], "v":o=>o["Q"]/o["A"] } },
+  "Viscous drag (Stokes)": { solve:{ "F":o=>6*Math.PI*o["η"]*o["r"]*o["v"], "η":o=>o["F"]/(6*Math.PI*o["r"]*o["v"]), "r":o=>o["F"]/(6*Math.PI*o["η"]*o["v"]), "v":o=>o["F"]/(6*Math.PI*o["η"]*o["r"]) } },
+  "Reynolds number": { solve:{ "Re":o=>o["ρ"]*o["v"]*o["L"]/o["η"], "ρ":o=>o["Re"]*o["η"]/(o["v"]*o["L"]), "v":o=>o["Re"]*o["η"]/(o["ρ"]*o["L"]), "L":o=>o["Re"]*o["η"]/(o["ρ"]*o["v"]), "η":o=>o["ρ"]*o["v"]*o["L"]/o["Re"] } },
+
+  "Work done": { solve:{ "W":o=>o["F"]*o["d"]*Math.cos(o["θ"]), "F":o=>o["W"]/(o["d"]*Math.cos(o["θ"])), "d":o=>o["W"]/(o["F"]*Math.cos(o["θ"])), "θ":o=>Math.acos(o["W"]/(o["F"]*o["d"])) } },
+  "Efficiency": { solve:{ "η":o=>o["E_out"]/o["E_in"], "E_out":o=>o["η"]*o["E_in"], "E_in":o=>o["E_out"]/o["η"] } },
+  "Work–energy theorem": { solve:{ "W":o=>o["ΔKE"], "ΔKE":o=>o["W"] } },
+  "Power (average)": { solve:{ "P̄":o=>o["ΔE"]/o["Δt"], "ΔE":o=>o["P̄"]*o["Δt"], "Δt":o=>o["ΔE"]/o["P̄"] } },
+  "Mechanical energy": { solve:{ "E":o=>o["KE"]+o["PE"], "KE":o=>o["E"]-o["PE"], "PE":o=>o["E"]-o["KE"] } },
+
+  "Resistivity": { solve:{ "R":o=>o["ρ"]*o["L"]/o["A"], "ρ":o=>o["R"]*o["A"]/o["L"], "L":o=>o["R"]*o["A"]/o["ρ"], "A":o=>o["ρ"]*o["L"]/o["R"] } },
+  "Magnetic force on wire": { solve:{ "F":o=>o["B"]*o["I"]*o["L"], "B":o=>o["F"]/(o["I"]*o["L"]), "I":o=>o["F"]/(o["B"]*o["L"]), "L":o=>o["F"]/(o["B"]*o["I"]) } },
+  "Force on moving charge": { solve:{ "F":o=>o["q"]*o["v"]*o["B"], "q":o=>o["F"]/(o["v"]*o["B"]), "v":o=>o["F"]/(o["q"]*o["B"]), "B":o=>o["F"]/(o["q"]*o["v"]) } },
+  "Resistors in series": { solve:{ "R_eq":o=>o["R₁"]+o["R₂"], "R₁":o=>o["R_eq"]-o["R₂"], "R₂":o=>o["R_eq"]-o["R₁"] } },
+  "Resistors in parallel": { solve:{ "R_eq":o=>1/(1/o["R₁"]+1/o["R₂"]), "R₁":o=>1/(1/o["R_eq"]-1/o["R₂"]), "R₂":o=>1/(1/o["R_eq"]-1/o["R₁"]) } },
+  "Capacitors in parallel": { solve:{ "C_eq":o=>o["C₁"]+o["C₂"], "C₁":o=>o["C_eq"]-o["C₂"], "C₂":o=>o["C_eq"]-o["C₁"] } },
+  "Capacitors in series": { solve:{ "C_eq":o=>1/(1/o["C₁"]+1/o["C₂"]), "C₁":o=>1/(1/o["C_eq"]-1/o["C₂"]), "C₂":o=>1/(1/o["C_eq"]-1/o["C₁"]) } },
+  "Electric field (point charge)": { consts:{k:C.kC}, solve:{ "E":o=>o["k"]*o["q"]/o["r"]**2, "q":o=>o["E"]*o["r"]**2/o["k"], "r":o=>Math.sqrt(o["k"]*o["q"]/o["E"]) } },
+  "Electric field (force)": { solve:{ "E":o=>o["F"]/o["q"], "F":o=>o["E"]*o["q"], "q":o=>o["F"]/o["E"] } },
+  "Electric potential energy": { consts:{k:C.kC}, solve:{ "U":o=>o["k"]*o["q₁"]*o["q₂"]/o["r"], "r":o=>o["k"]*o["q₁"]*o["q₂"]/o["U"], "q₁":o=>o["U"]*o["r"]/(o["k"]*o["q₂"]), "q₂":o=>o["U"]*o["r"]/(o["k"]*o["q₁"]) } },
+  "Electric potential": { consts:{k:C.kC}, solve:{ "V":o=>o["k"]*o["q"]/o["r"], "q":o=>o["V"]*o["r"]/o["k"], "r":o=>o["k"]*o["q"]/o["V"] } },
+  "Parallel plate capacitor": { consts:{"ε₀":C.eps0}, solve:{ "C":o=>o["ε₀"]*o["A"]/o["d"], "A":o=>o["C"]*o["d"]/o["ε₀"], "d":o=>o["ε₀"]*o["A"]/o["C"] } },
+  "Drift velocity": { solve:{ "I":o=>o["n"]*o["A"]*o["q"]*o["v_d"], "n":o=>o["I"]/(o["A"]*o["q"]*o["v_d"]), "A":o=>o["I"]/(o["n"]*o["q"]*o["v_d"]), "q":o=>o["I"]/(o["n"]*o["A"]*o["v_d"]), "v_d":o=>o["I"]/(o["n"]*o["A"]*o["q"]) } },
+  "Magnetic flux": { solve:{ "Φ":o=>o["B"]*o["A"]*Math.cos(o["θ"]), "B":o=>o["Φ"]/(o["A"]*Math.cos(o["θ"])), "A":o=>o["Φ"]/(o["B"]*Math.cos(o["θ"])), "θ":o=>Math.acos(o["Φ"]/(o["B"]*o["A"])) } },
+  "Solenoid field": { consts:{"μ₀":C.mu0}, solve:{ "B":o=>o["μ₀"]*o["n"]*o["I"], "n":o=>o["B"]/(o["μ₀"]*o["I"]), "I":o=>o["B"]/(o["μ₀"]*o["n"]) } },
+  "Field around wire": { consts:{"μ₀":C.mu0}, solve:{ "B":o=>o["μ₀"]*o["I"]/(2*Math.PI*o["r"]), "I":o=>o["B"]*2*Math.PI*o["r"]/o["μ₀"], "r":o=>o["μ₀"]*o["I"]/(2*Math.PI*o["B"]) } },
+  "Transformer ratio": { solve:{ "V_s":o=>o["V_p"]*o["N_s"]/o["N_p"], "V_p":o=>o["V_s"]*o["N_p"]/o["N_s"], "N_s":o=>o["N_p"]*o["V_s"]/o["V_p"], "N_p":o=>o["N_s"]*o["V_p"]/o["V_s"] } },
+  "RMS voltage": { solve:{ "V_rms":o=>o["V₀"]/Math.SQRT2, "V₀":o=>o["V_rms"]*Math.SQRT2 } },
+  "RMS current": { solve:{ "I_rms":o=>o["I₀"]/Math.SQRT2, "I₀":o=>o["I_rms"]*Math.SQRT2 } },
+  "Impedance (RLC)": { solve:{ "Z":o=>Math.sqrt(o["R"]**2+(o["X_L"]-o["X_C"])**2), "R":o=>Math.sqrt(o["Z"]**2-(o["X_L"]-o["X_C"])**2) } },
+  "Inductor energy": { solve:{ "E":o=>0.5*o["L"]*o["I"]**2, "L":o=>2*o["E"]/o["I"]**2, "I":o=>Math.sqrt(2*o["E"]/o["L"]) } },
+
+  "First law of thermodynamics": { solve:{ "ΔU":o=>o["Q"]-o["W"], "Q":o=>o["ΔU"]+o["W"], "W":o=>o["Q"]-o["ΔU"] } },
+  "Thermal expansion (linear)": { solve:{ "ΔL":o=>o["α"]*o["L₀"]*o["ΔT"], "α":o=>o["ΔL"]/(o["L₀"]*o["ΔT"]), "L₀":o=>o["ΔL"]/(o["α"]*o["ΔT"]), "ΔT":o=>o["ΔL"]/(o["α"]*o["L₀"]) } },
+  "Thermal expansion (volume)": { solve:{ "ΔV":o=>o["β"]*o["V₀"]*o["ΔT"], "β":o=>o["ΔV"]/(o["V₀"]*o["ΔT"]), "V₀":o=>o["ΔV"]/(o["β"]*o["ΔT"]), "ΔT":o=>o["ΔV"]/(o["β"]*o["V₀"]) } },
+  "Heat conduction": { solve:{ "Q":o=>o["k"]*o["A"]*o["ΔT"]*o["t"]/o["L"], "t":o=>o["Q"]*o["L"]/(o["k"]*o["A"]*o["ΔT"]), "k":o=>o["Q"]*o["L"]/(o["A"]*o["ΔT"]*o["t"]), "A":o=>o["Q"]*o["L"]/(o["k"]*o["ΔT"]*o["t"]), "ΔT":o=>o["Q"]*o["L"]/(o["k"]*o["A"]*o["t"]), "L":o=>o["k"]*o["A"]*o["ΔT"]*o["t"]/o["Q"] } },
+  "Carnot efficiency": { solve:{ "η":o=>1-o["T_c"]/o["T_h"], "T_c":o=>o["T_h"]*(1-o["η"]), "T_h":o=>o["T_c"]/(1-o["η"]) } },
+  "Entropy change": { solve:{ "ΔS":o=>o["Q"]/o["T"], "Q":o=>o["ΔS"]*o["T"], "T":o=>o["Q"]/o["ΔS"] } },
+  "Average KE of gas": { consts:{k_B:C.kB}, solve:{ "KE":o=>1.5*o["k_B"]*o["T"], "T":o=>2*o["KE"]/(3*o["k_B"]) } },
+  "RMS molecular speed": { consts:{k_B:C.kB}, solve:{ "v_rms":o=>Math.sqrt(3*o["k_B"]*o["T"]/o["m"]), "T":o=>o["v_rms"]**2*o["m"]/(3*o["k_B"]), "m":o=>3*o["k_B"]*o["T"]/o["v_rms"]**2 } },
+  "Work in isobaric process": { solve:{ "W":o=>o["P"]*o["ΔV"], "P":o=>o["W"]/o["ΔV"], "ΔV":o=>o["W"]/o["P"] } },
+  "Stefan–Boltzmann law": { consts:{σ:C.sigma}, solve:{ "P":o=>o["σ"]*o["A"]*o["e"]*o["T"]**4, "A":o=>o["P"]/(o["σ"]*o["e"]*o["T"]**4), "e":o=>o["P"]/(o["σ"]*o["A"]*o["T"]**4), "T":o=>Math.pow(o["P"]/(o["σ"]*o["A"]*o["e"]),0.25) } },
+  "Wien's displacement law": { consts:{b:C.bWien}, solve:{ "λ_max":o=>o["b"]/o["T"], "T":o=>o["b"]/o["λ_max"], "b":o=>o["λ_max"]*o["T"] } },
+
+  "Photoelectric effect": { consts:{h:C.h}, solve:{ "E":o=>o["h"]*o["f"]-o["φ"], "f":o=>(o["E"]+o["φ"])/o["h"], "φ":o=>o["h"]*o["f"]-o["E"] } },
+  "Relativistic momentum": { solve:{ "p":o=>o["γ"]*o["m"]*o["v"], "γ":o=>o["p"]/(o["m"]*o["v"]), "m":o=>o["p"]/(o["γ"]*o["v"]), "v":o=>o["p"]/(o["γ"]*o["m"]) } },
+  "Lorentz factor": { consts:{c:C.c}, solve:{ "γ":o=>1/Math.sqrt(1-o["v"]**2/o["c"]**2), "v":o=>o["c"]*Math.sqrt(1-1/o["γ"]**2) } },
+  "Time dilation": { solve:{ "Δt":o=>o["γ"]*o["Δt₀"], "γ":o=>o["Δt"]/o["Δt₀"], "Δt₀":o=>o["Δt"]/o["γ"] } },
+  "Length contraction": { solve:{ "L":o=>o["L₀"]/o["γ"], "L₀":o=>o["L"]*o["γ"], "γ":o=>o["L₀"]/o["L"] } },
+  "Relativistic energy": { consts:{c:C.c}, solve:{ "E":o=>o["γ"]*o["m"]*o["c"]**2, "γ":o=>o["E"]/(o["m"]*o["c"]**2), "m":o=>o["E"]/(o["γ"]*o["c"]**2) } },
+  "Energy–momentum relation": { consts:{c:C.c}, solve:{ "E":o=>Math.sqrt((o["p"]*o["c"])**2+(o["m"]*o["c"]**2)**2), "p":o=>Math.sqrt(o["E"]**2-(o["m"]*o["c"]**2)**2)/o["c"], "m":o=>Math.sqrt(o["E"]**2-(o["p"]*o["c"])**2)/o["c"]**2 } },
+  "Heisenberg uncertainty": { consts:{"ħ":C.hbar}, solve:{ "Δx":o=>o["ħ"]/(2*o["Δp"]), "Δp":o=>o["ħ"]/(2*o["Δx"]) } },
+  "Bohr radius / energy": { solve:{ "E_n":o=>-13.6/o["n"]**2, "n":o=>Math.sqrt(-13.6/o["E_n"]) } },
+  "Compton wavelength shift": { consts:{h:C.h,m_e:C.me,c:C.c}, solve:{ "Δλ":o=>(o["h"]/(o["m_e"]*o["c"]))*(1-Math.cos(o["θ"])), "θ":o=>Math.acos(1-o["Δλ"]*o["m_e"]*o["c"]/o["h"]) } },
+
+  "Binding energy per nucleon": { consts:{c:C.c}, solve:{ "BE":o=>o["Δm"]*o["c"]**2, "Δm":o=>o["BE"]/o["c"]**2 } },
+
+  "Schwarzschild radius": { consts:{G:C.G,c:C.c}, solve:{ "r_s":o=>2*o["G"]*o["M"]/o["c"]**2, "M":o=>o["r_s"]*o["c"]**2/(2*o["G"]) } },
+  "Luminosity (inverse square)": { solve:{ "b":o=>o["L"]/(4*Math.PI*o["d"]**2), "L":o=>o["b"]*4*Math.PI*o["d"]**2, "d":o=>Math.sqrt(o["L"]/(4*Math.PI*o["b"])) } },
+  "Stellar luminosity": { consts:{σ:C.sigma}, solve:{ "L":o=>4*Math.PI*o["R"]**2*o["σ"]*o["T"]**4, "R":o=>Math.sqrt(o["L"]/(4*Math.PI*o["σ"]*o["T"]**4)), "T":o=>Math.pow(o["L"]/(4*Math.PI*o["R"]**2*o["σ"]),0.25) } }
+};
+
+const grid = document.getElementById('grid');
+const countEl = document.getElementById('count');
+const searchEl = document.getElementById('search');
+const chipsEl = document.getElementById('chips');
+const symModeEl = document.getElementById('symMode');
+const calcModeEl = document.getElementById('calcMode');
+const catFilterEl = document.getElementById('catFilter');
+const langSelEl = document.getElementById('langSel');
+
+const CAT_LIST = [...new Set(FORMULAS.map(f => f.cat))].sort();
+const popular = ["displacement","velocity","force","energy","time","mass","acceleration","momentum","power","charge","frequency"];
+
+// (Re)build the category dropdown and chip suggestions in the active language.
+function buildControls(){
+  catFilterEl.innerHTML = '<option value="">' + esc(t('all')) + '</option>' +
+    CAT_LIST.map(cat => '<option value="' + esc(cat) + '">' + esc(catLabel(cat)) + '</option>').join('');
+  chipsEl.innerHTML = '';
+  popular.forEach(p => {
+    const c = document.createElement('div');
+    c.className = 'chip';
+    c.textContent = varLabel(p);
+    c.onclick = () => { searchEl.value = varLabel(p); if(symModeEl.checked) symModeEl.checked = false; render(); };
+    chipsEl.appendChild(c);
+  });
+}
+
+function esc(s){ return s.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
+
+function highlight(text, q){
+  if(!q) return esc(text);
+  const i = text.toLowerCase().indexOf(q.toLowerCase());
+  if(i === -1) return esc(text);
+  return esc(text.slice(0,i)) + '<mark>' + esc(text.slice(i,i+q.length)) + '</mark>' + esc(text.slice(i+q.length));
+}
+
+// Strip subscripts/primes/diacritics to get a symbol's base for matching.
+function baseSymbol(sym){
+  return sym
+    .normalize('NFD').replace(/[̀-ͯ]/g,'')      // combining marks (v̄)
+    .split(/[_₀₁₂₃₄₅₆₇₈₉ₛₒ'½]/)[0]                          // subscript boundary
+    .replace(/[₀-₉]/g,'')
+    .trim();
+}
+function symMatch(sym, q){
+  if(!q) return false;
+  const s = sym.toLowerCase(), b = baseSymbol(sym).toLowerCase(), ql = q.toLowerCase();
+  return s === ql || b === ql || s.startsWith(ql) || b === ql;
+}
+
+function nameMatch(nm, q){ return nm.toLowerCase().includes(q) || varLabel(nm).toLowerCase().includes(q); }
+function varMatches(f, q, symMode){
+  return f.vars.some(([sym,nm]) => symMode ? symMatch(sym, q) : (nameMatch(nm, q) || sym.toLowerCase() === q));
+}
+function matches(f, q, symMode){
+  if(!q) return true;
+  if(!symMode && (f.name.toLowerCase().includes(q) || fnameLabel(f.name).toLowerCase().includes(q))) return true;
+  return varMatches(f, q, symMode);
+}
+
+function fmt(x){
+  if(!isFinite(x)) return '—';
+  if(x === 0) return '0';
+  const a = Math.abs(x);
+  if(a >= 1e6 || a < 1e-4) return x.toExponential(4);
+  return parseFloat(x.toPrecision(6)).toString();
+}
+
+function render(){
+  const raw = searchEl.value || '';
+  const symMode = symModeEl.checked;
+  const q = symMode ? raw.trim() : raw.trim().toLowerCase();
+  const cat = catFilterEl.value;
+  let results = FORMULAS.filter(f => matches(f, q, symMode));
+  if(cat) results = results.filter(f => f.cat === cat);
+
+  if(results.length === 0){
+    countEl.textContent = '';
+    grid.innerHTML = '<div class="empty">' + esc(t('noResults')) + (q ? ' ' + esc(t('forWord')) + ' “' + esc(raw) + '”' : '') +
+      '. ' + esc(symMode ? t('trySym') : t('tryName')) + '.</div>';
+    return;
+  }
+
+  countEl.textContent = results.length + ' ' + (results.length === 1 ? t('formula') : t('formulas')) +
+    (q ? ' · “' + raw + '”' : '') + (cat ? ' · ' + catLabel(cat) : '');
+
+  grid.innerHTML = results.map((f, idx) => {
+    const i = FORMULAS.indexOf(f);
+    const varsHtml = f.vars.map(([sym,nm]) => {
+      const isMatch = q && (symMode ? symMatch(sym, q) : (nameMatch(nm, q) || sym.toLowerCase() === q));
+      const u = unitFor(nm);
+      const label = varLabel(nm);
+      return '<span class="var' + (isMatch ? ' match' : '') + '" data-name="' + esc(nm) + '" title="' + esc(label) + '"><b>' + esc(sym) + '</b> ' +
+        (symMode ? esc(label) : highlight(label, isMatch ? q : '')) +
+        (u ? '<span class="unit">' + esc(u) + '</span>' : '') + '</span>';
+    }).join('');
+    const solver = SOLVERS[f.name];
+    const calcBtn = (calcModeEl.checked && solver) ? '<button class="calc-btn" data-calc="'+i+'">🧮 ' + esc(t('calculator')) + '</button>' : '';
+    const calcBox = (calcModeEl.checked && solver) ? buildCalc(f, i, solver) : '';
+    return '<div class="card">' +
+      '<span class="cat">' + esc(catLabel(f.cat)) + '</span>' +
+      '<h3>' + (symMode ? esc(fnameLabel(f.name)) : highlight(fnameLabel(f.name), q)) + '</h3>' +
+      '<div class="formula">' + esc(f.expr) + '</div>' +
+      '<div class="vars">' + varsHtml + '</div>' +
+      calcBtn + calcBox +
+    '</div>';
+  }).join('');
+}
+
+function buildCalc(f, i, solver){
+  const consts = solver.consts || {};
+  const rows = f.vars.map(([sym,nm]) => {
+    const u = unitFor(nm);
+    const cv = consts[sym];
+    const solvable = !!solver.solve[sym];
+    const conv = CONV[u];
+    const sel = (conv && conv.length > 1)
+      ? '<select class="unit-sel" data-for="' + esc(sym) + '">' +
+          conv.map(([lbl,fac]) => '<option value="' + fac + '">' + esc(lbl) + '</option>').join('') +
+        '</select>'
+      : (u ? '<span class="u-fixed">' + esc(u) + '</span>' : '');
+    return '<div class="calc-row">' +
+      '<span class="lbl"><b>' + esc(sym) + '</b> ' + esc(varLabel(nm)) +
+        (solvable ? '' : ' <span class="u">· ' + esc(t('inputOnly')) + '</span>') + '</span>' +
+      '<span class="calc-inwrap"><input type="text" inputmode="decimal" data-sym="' + esc(sym) + '"' +
+        (cv !== undefined ? ' value="' + cv + '" class="const"' : '') + ' placeholder="?">' + sel + '</span>' +
+    '</div>';
+  }).join('');
+  return '<div class="calc" id="calc-' + i + '">' +
+    '<div class="calc-hint">' + esc(t('calcHint')) + '</div>' +
+    rows +
+    '<div class="calc-actions"><button class="calc-solve" data-solve="' + i + '">' + esc(t('solve')) + '</button>' +
+    '<button class="calc-clear" data-clear="' + i + '">' + esc(t('clear')) + '</button></div>' +
+    '<div class="calc-err" id="err-' + i + '"></div></div>';
+}
+
+function doSolve(i){
+  const f = FORMULAS[i], solver = SOLVERS[f.name];
+  const box = document.getElementById('calc-' + i);
+  const err = document.getElementById('err-' + i);
+  err.textContent = '';
+  const factorOf = inp => { const s = box.querySelector('select[data-for="' + cssEsc(inp.dataset.sym) + '"]'); return s ? Number(s.value) : 1; };
+  const inputs = [...box.querySelectorAll('input[data-sym]')];
+  const vals = {}; const blanks = [];
+  inputs.forEach(inp => {
+    inp.classList.remove('solved');
+    const raw = inp.value.trim();
+    if(raw === ''){ blanks.push(inp); }
+    else {
+      const v = Number(raw);
+      if(isNaN(v)){ blanks.push(inp); inp.classList.add('badval'); }
+      else vals[inp.dataset.sym] = v * factorOf(inp);   // → SI
+    }
+  });
+  if(blanks.length === 0){ err.textContent = t('errNoBlank'); return; }
+  if(blanks.length > 1){ err.textContent = t('errManyBlank').replace('{n}', blanks.length); return; }
+  const target = blanks[0], sym = target.dataset.sym;
+  const fn = solver.solve[sym];
+  if(!fn){ err.textContent = t('errNoSolve').replace('{s}', sym); return; }
+  let res;
+  try { res = fn(vals); } catch(e){ err.textContent = t('errCompute'); return; }
+  if(res === undefined || isNaN(res) || !isFinite(res)){ err.textContent = t('errUndef'); return; }
+  target.value = fmt(res / factorOf(target));   // SI → chosen output unit
+  target.classList.add('solved');
+}
+
+function clearCalc(i){
+  const box = document.getElementById('calc-' + i);
+  const solver = SOLVERS[FORMULAS[i].name];
+  const consts = solver.consts || {};
+  document.getElementById('err-' + i).textContent = '';
+  box.querySelectorAll('input[data-sym]').forEach(inp => {
+    inp.classList.remove('solved');
+    const sym = inp.dataset.sym;
+    inp.value = consts[sym] !== undefined ? consts[sym] : '';
+  });
+}
+
+grid.addEventListener('click', e => {
+  const vb = e.target.closest('.var');
+  if(vb){
+    if(symModeEl.checked) symModeEl.checked = false;
+    searchEl.value = varLabel(vb.dataset.name);
+    searchEl.placeholder = t('phName');
+    render();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
+  const cb = e.target.closest('[data-calc]');
+  if(cb){ document.getElementById('calc-' + cb.dataset.calc).classList.toggle('open'); return; }
+  const sb = e.target.closest('[data-solve]');
+  if(sb){ doSolve(+sb.dataset.solve); return; }
+  const xb = e.target.closest('[data-clear]');
+  if(xb){ clearCalc(+xb.dataset.clear); return; }
+});
+
+function applyLang(){
+  document.documentElement.lang = lang;
+  document.getElementById('title').textContent = t('title');
+  document.getElementById('sub').textContent = t('sub');
+  document.getElementById('lblSym').textContent = t('symMode');
+  document.getElementById('lblCalc').textContent = t('calcMode');
+  document.getElementById('lblCat').textContent = t('category');
+  document.getElementById('lblLang').textContent = t('lang');
+  searchEl.placeholder = symModeEl.checked ? t('phSym') : t('phName');
+  const prevCat = catFilterEl.value;
+  buildControls();
+  catFilterEl.value = prevCat;
+  render();
+}
+
+searchEl.addEventListener('input', render);
+symModeEl.addEventListener('change', () => { searchEl.placeholder = symModeEl.checked ? t('phSym') : t('phName'); render(); });
+calcModeEl.addEventListener('change', render);
+catFilterEl.addEventListener('change', render);
+langSelEl.addEventListener('change', () => {
+  lang = langSelEl.value;
+  try { localStorage.setItem('pf_lang', lang); } catch(e){}
+  applyLang();
+});
+
+langSelEl.value = lang;
+applyLang();
+</script>
+</body>
+</html>
