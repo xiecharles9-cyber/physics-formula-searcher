@@ -1,13 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://physicsformulas.net/</loc>
-    <changefreq>monthly</changefreq>
-    <priority>1.0</priority>
-  </url>
-  <url>
-    <loc>https://physicsformulas.net/privacy.html</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
+  <url><loc>https://physicsformulas.net/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://physicsformulas.net/kinematics.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://physicsformulas.net/dynamics.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://physicsformulas.net/momentum.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://physicsformulas.net/energy.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://physicsformulas.net/rotational-motion.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://physicsformulas.net/gravitation.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://physicsformulas.net/waves.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://physicsformulas.net/electricity-magnetism.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://physicsformulas.net/thermodynamics.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://physicsformulas.net/modern-physics.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://physicsformulas.net/optics.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://physicsformulas.net/fluids.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://physicsformulas.net/ac-circuits.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://physicsformulas.net/nuclear-physics.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://physicsformulas.net/astrophysics.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://physicsformulas.net/privacy.html</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
 </urlset>
