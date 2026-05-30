@@ -2,7 +2,7 @@
 
 A free, fast, in-browser reference and calculator for **170+ physics formulas** — searchable by the *quantity* you care about. Type a variable like `displacement`, `force`, or `energy` and instantly see every equation that uses it.
 
-**🔗 Live site:** https://xiecharles9-cyber.github.io/physics-formula-searcher/
+**🔗 Live site:** https://physicsformulas.net
 
 ---
 
@@ -15,11 +15,12 @@ A free, fast, in-browser reference and calculator for **170+ physics formulas** 
 - **Unit conversion** — enter values in km/h, grams, eV, degrees, etc.; inputs convert to SI before solving and results convert back to your chosen unit.
 - **5 languages** — full interface, category, variable, and formula translations in **English, Spanish, French, German, and Chinese**. Search works in the active language.
 - **Category filter** — browse one topic at a time.
-- **Zero dependencies** — a single self-contained HTML file. No build step, no frameworks, works offline.
+- **SEO topic pages** — a dedicated, crawlable page per topic (e.g. `kinematics.html`, `electricity-magnetism.html`) listing every formula in that category.
+- **Zero dependencies** — the app is a single self-contained HTML file. No build step, no frameworks, works offline.
 
 ## How to use
 
-1. Open the [live site](https://xiecharles9-cyber.github.io/physics-formula-searcher/) (or open `index.html` locally).
+1. Open the [live site](https://physicsformulas.net) (or open `index.html` locally).
 2. Type a variable or formula name in the search box.
 3. Optional toggles:
    - **Search by symbol** — switch matching to mathematical symbols.
@@ -50,14 +51,22 @@ python3 -m http.server 8137
 
 | File | Purpose |
 |------|---------|
-| `index.html` | The entire app — markup, styles, formula data, translations, and logic. |
+| `index.html` | The entire app — markup, styles, formula data, translations, calculators, and logic. |
+| `*.html` (topic pages) | 15 static SEO pages, one per category (`kinematics.html`, `dynamics.html`, `electricity-magnetism.html`, `thermodynamics.html`, …). |
 | `privacy.html` | Privacy policy (required for advertising). |
-| `DOMAIN-SETUP.md` | How to attach a custom domain and enable Google AdSense. |
+| `sitemap.xml` | Lists all pages for search engines. |
+| `robots.txt` | Crawler directives + sitemap pointer. |
+| `og-image.png` | Social-share preview card (Open Graph / Twitter). |
+| `CNAME` | Custom domain (`physicsformulas.net`) for GitHub Pages. |
+| `DOMAIN-SETUP.md` | How the custom domain + Google AdSense were wired up. |
 | `LICENSE` | Usage terms. |
 
-## Custom domain & ads
+## Hosting, SEO & analytics
 
-See **[DOMAIN-SETUP.md](DOMAIN-SETUP.md)** for connecting a custom domain via GitHub Pages and wiring up Google AdSense (the ad code is already scaffolded in `index.html` — you just add your publisher and slot IDs).
+- **Hosting:** GitHub Pages, served at the custom domain **physicsformulas.net** (HTTPS enforced).
+- **SEO:** per-page meta descriptions, Open Graph + Twitter cards, JSON-LD structured data, a sitemap, and `robots.txt`. Submitted to Google Search Console and Bing Webmaster Tools.
+- **Analytics:** Google Analytics 4.
+- **Ads:** Google AdSense is scaffolded in `index.html` — set `ADSENSE_PUB_ID` / `ADSENSE_SLOT_ID` (and `GA_ID` for analytics) near the bottom of the script. See **[DOMAIN-SETUP.md](DOMAIN-SETUP.md)**.
 
 ## License
 
