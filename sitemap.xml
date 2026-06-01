@@ -1,36 +1,52 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://physicsformulas.net/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
-  <url><loc>https://physicsformulas.net/physics-formula-sheet.html</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://physicsformulas.net/kinematics.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://physicsformulas.net/dynamics.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://physicsformulas.net/momentum.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://physicsformulas.net/energy.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://physicsformulas.net/rotational-motion.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://physicsformulas.net/gravitation.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://physicsformulas.net/waves.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://physicsformulas.net/electricity-magnetism.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://physicsformulas.net/thermodynamics.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://physicsformulas.net/modern-physics.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://physicsformulas.net/optics.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://physicsformulas.net/fluids.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://physicsformulas.net/ac-circuits.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://physicsformulas.net/nuclear-physics.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://physicsformulas.net/acceleration-formula.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://physicsformulas.net/astrophysics.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://physicsformulas.net/kinetic-energy-formula.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://physicsformulas.net/ohms-law.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://physicsformulas.net/newtons-second-law.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://physicsformulas.net/density-formula.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://physicsformulas.net/work-formula.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://physicsformulas.net/power-formula.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://physicsformulas.net/gravitational-potential-energy.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://physicsformulas.net/ideal-gas-law.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://physicsformulas.net/capacitance-formula.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://physicsformulas.net/centripetal-force-formula.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://physicsformulas.net/coulombs-law.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://physicsformulas.net/de-broglie-wavelength.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://physicsformulas.net/density-formula.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://physicsformulas.net/dynamics.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://physicsformulas.net/efficiency-formula.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://physicsformulas.net/electrical-power-formula.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://physicsformulas.net/electricity-magnetism.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://physicsformulas.net/energy.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://physicsformulas.net/escape-velocity.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://physicsformulas.net/fluids.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://physicsformulas.net/frequency-and-period.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://physicsformulas.net/gravitation.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://physicsformulas.net/gravitational-potential-energy.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://physicsformulas.net/half-life-formula.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://physicsformulas.net/hookes-law.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://physicsformulas.net/ideal-gas-law.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://physicsformulas.net/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://physicsformulas.net/kinematics.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://physicsformulas.net/kinetic-energy-formula.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://physicsformulas.net/magnetic-force-formula.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://physicsformulas.net/mass-energy-equivalence.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://physicsformulas.net/wave-speed-formula.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://physicsformulas.net/modern-physics.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://physicsformulas.net/momentum-formula.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://physicsformulas.net/pressure-formula.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://physicsformulas.net/momentum.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://physicsformulas.net/newtons-second-law.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://physicsformulas.net/nuclear-physics.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://physicsformulas.net/ohms-law.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://physicsformulas.net/optics.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://physicsformulas.net/pendulum-period-formula.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://physicsformulas.net/photon-energy-formula.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://physicsformulas.net/weight-formula.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://physicsformulas.net/physics-formula-sheet.html</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://physicsformulas.net/power-formula.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://physicsformulas.net/pressure-formula.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://physicsformulas.net/privacy.html</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://physicsformulas.net/rotational-motion.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://physicsformulas.net/snells-law.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://physicsformulas.net/specific-heat-formula.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://physicsformulas.net/thermodynamics.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://physicsformulas.net/torque-formula.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://physicsformulas.net/velocity-formula.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://physicsformulas.net/wave-speed-formula.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://physicsformulas.net/waves.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://physicsformulas.net/weight-formula.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://physicsformulas.net/work-formula.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
 </urlset>
